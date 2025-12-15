@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { generateUserInfo, UserInfo } from '@/lib/userGenerator';
+import { initializePendo, updatePendoVisitor } from '@/lib/pendo';
 
 interface UserContextType {
   userInfo: UserInfo;
@@ -10,6 +11,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [userInfo, setUserInfo] = useState<UserInfo>(() => generateUserInfo());
+  const pendoInitialized = useRef(false);
 
   const refreshUser = useCallback(() => {
     setUserInfo(generateUserInfo());
@@ -27,6 +29,21 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   // Store in window for global access (like the original script)
   useEffect(() => {
     (window as any).userInfo = userInfo;
+  }, [userInfo]);
+
+  // Initialize Pendo on first load
+  useEffect(() => {
+    if (!pendoInitialized.current) {
+      initializePendo(userInfo);
+      pendoInitialized.current = true;
+    }
+  }, []);
+
+  // Update Pendo when user changes
+  useEffect(() => {
+    if (pendoInitialized.current) {
+      updatePendoVisitor(userInfo);
+    }
   }, [userInfo]);
 
   return (
