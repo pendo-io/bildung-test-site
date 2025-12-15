@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import SourceToPay from "./pages/SourceToPay";
+import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
 import LeadToCash from "./pages/LeadToCash";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import HireToRetire from "./pages/HireToRetire";
+import EmployeeDetail from "./pages/EmployeeDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,10 +22,14 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/source-to-pay" element={<SourceToPay />} />
+          <Route path="/source-to-pay/purchase-order/:id" element={<PurchaseOrderDetail />} />
           <Route path="/source-to-pay/*" element={<SourceToPay />} />
           <Route path="/lead-to-cash" element={<LeadToCash />} />
           <Route path="/lead-to-cash/opportunity/:id" element={<OpportunityDetail />} />
           <Route path="/lead-to-cash/*" element={<LeadToCash />} />
+          <Route path="/hire-to-retire" element={<HireToRetire />} />
+          <Route path="/hire-to-retire/employee/:id" element={<EmployeeDetail />} />
           <Route path="/hire-to-retire/*" element={<HireToRetire />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
