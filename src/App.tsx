@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { UserProvider } from "@/contexts/UserContext";
 import Index from "./pages/Index";
 import SourceToPay from "./pages/SourceToPay";
 import PurchaseOrderDetail from "./pages/PurchaseOrderDetail";
@@ -16,11 +17,12 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+    <UserProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/source-to-pay" element={<SourceToPay />} />
           <Route path="/source-to-pay/purchase-order/:id" element={<PurchaseOrderDetail />} />
@@ -31,10 +33,11 @@ const App = () => (
           <Route path="/hire-to-retire" element={<HireToRetire />} />
           <Route path="/hire-to-retire/employee/:id" element={<EmployeeDetail />} />
           <Route path="/hire-to-retire/*" element={<HireToRetire />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </UserProvider>
   </QueryClientProvider>
 );
 
