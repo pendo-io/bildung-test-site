@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { AddOpportunityDialog } from "@/components/lead-to-cash/AddOpportunityDialog";
 import {
   TrendingUp,
   Users,
@@ -10,11 +13,12 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 
-const opportunities = [
+const initialOpportunities = [
   {
     id: "OPP-2024-456",
     company: "Acme Corporation",
     value: "$2.4M",
+    valueNum: 2400000,
     stage: "Negotiation",
     probability: 75,
     owner: "John Smith",
@@ -23,6 +27,7 @@ const opportunities = [
     id: "OPP-2024-455",
     company: "Global Enterprises",
     value: "$1.8M",
+    valueNum: 1800000,
     stage: "Proposal",
     probability: 50,
     owner: "Sarah Johnson",
@@ -31,6 +36,7 @@ const opportunities = [
     id: "OPP-2024-454",
     company: "Tech Innovators",
     value: "$950K",
+    valueNum: 950000,
     stage: "Discovery",
     probability: 25,
     owner: "Mike Chen",
@@ -39,6 +45,7 @@ const opportunities = [
     id: "OPP-2024-453",
     company: "Retail Giants Inc",
     value: "$3.2M",
+    valueNum: 3200000,
     stage: "Qualification",
     probability: 40,
     owner: "Emily Davis",
@@ -54,6 +61,23 @@ const pipelineStages = [
 ];
 
 export default function LeadToCash() {
+  const navigate = useNavigate();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [opportunities, setOpportunities] = useState(initialOpportunities);
+
+  const handleAddOpportunity = (newOpp: any) => {
+    const formattedValue = newOpp.value >= 1000000 
+      ? `$${(newOpp.value / 1000000).toFixed(1)}M`
+      : `$${(newOpp.value / 1000).toFixed(0)}K`;
+    
+    setOpportunities(prev => [{
+      ...newOpp,
+      value: formattedValue,
+      valueNum: newOpp.value,
+      stage: newOpp.stage.charAt(0).toUpperCase() + newOpp.stage.slice(1),
+    }, ...prev]);
+  };
+
   return (
     <AppLayout
       title="Lead to Cash"
@@ -143,14 +167,15 @@ export default function LeadToCash() {
               High-value deals in progress
             </p>
           </div>
-          <Button>Add Opportunity</Button>
+          <Button onClick={() => setShowAddDialog(true)}>Add Opportunity</Button>
         </div>
 
         <div className="space-y-4">
           {opportunities.map((opp) => (
             <div
               key={opp.id}
-              className="flex items-center gap-6 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+              onClick={() => navigate(`/lead-to-cash/opportunity/${opp.id}`)}
+              className="flex items-center gap-6 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3">
@@ -187,6 +212,13 @@ export default function LeadToCash() {
           ))}
         </div>
       </div>
+
+      {/* Add Opportunity Dialog */}
+      <AddOpportunityDialog
+        open={showAddDialog}
+        onOpenChange={setShowAddDialog}
+        onAdd={handleAddOpportunity}
+      />
     </AppLayout>
   );
 }
