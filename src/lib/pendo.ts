@@ -31,22 +31,20 @@ export function initializePendo(userInfo: UserInfo) {
     })(window, document, 'script', 'pendo');
   })(PENDO_API_KEY);
 
-  // Initialize with user info
-  if (window.pendo) {
-    window.pendo.initialize({
-      visitor: {
-        id: userInfo.visitorId,
-        role: userInfo.role,
-      },
-      account: {
-        id: userInfo.account,
-      },
-    });
-  }
+  // Initialize with user info - call directly, the snippet queues calls until script loads
+  window.pendo.initialize({
+    visitor: {
+      id: userInfo.visitorId,
+      role: userInfo.role,
+    },
+    account: {
+      id: userInfo.account,
+    },
+  });
 }
 
 export function updatePendoVisitor(userInfo: UserInfo) {
-  if (window.pendo && window.pendo.identify) {
+  if (window.pendo?.identify) {
     window.pendo.identify({
       visitor: {
         id: userInfo.visitorId,
