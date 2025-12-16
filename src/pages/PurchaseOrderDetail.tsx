@@ -148,7 +148,7 @@ export default function PurchaseOrderDetail() {
 
       {/* Stage Progress */}
       <Card className="mb-8 card-elevated">
-        <CardHeader>
+        <CardHeader className="w-fit">
           <CardTitle>Order Progress</CardTitle>
         </CardHeader>
         <CardContent>
