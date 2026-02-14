@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Shield, MessageSquare, CheckCircle2, Sparkles, Loader2, Clock, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 
 type Intent = "prevent" | "explain" | "intervene";
@@ -258,6 +258,14 @@ export default function BillGuardAnalysis() {
   const [analysisResult, setAnalysisResult] = useState<InvoiceData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<number>(0);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+  }, []);
 
   const handleAnalyze = () => {
     const trimmed = invoiceId.trim().toUpperCase();
@@ -270,13 +278,26 @@ export default function BillGuardAnalysis() {
       toast.error(`Invoice "${trimmed}" not found. Try one from the Scenario Legend.`);
       return;
     }
+    clearTimers();
     setIsAnalyzing(true);
     setAnalysisResult(null);
-    // Simulate agent thinking delay
-    setTimeout(() => {
+    setCompletedSteps(0);
+    setShowTimeline(true);
+
+    // Animate each step sequentially
+    const stepCount = data.execution_steps.length;
+    const stepDelay = 600;
+    for (let i = 0; i < stepCount; i++) {
+      const t = setTimeout(() => setCompletedSteps(i + 1), stepDelay * (i + 1));
+      timersRef.current.push(t);
+    }
+    // Show full results after all steps complete
+    const finalDelay = stepDelay * (stepCount + 1);
+    const t = setTimeout(() => {
       setAnalysisResult(data);
       setIsAnalyzing(false);
-    }, 1200);
+    }, finalDelay);
+    timersRef.current.push(t);
   };
 
   const handleCopyId = (id: string) => {
@@ -362,6 +383,44 @@ export default function BillGuardAnalysis() {
         </CardContent>
       </Card>
 
+      {/* Execution Timeline - shows during analysis with progressive steps */}
+      {showTimeline && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Execution Timeline</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3">
+              {(result?.execution_steps ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.execution_steps ?? []).map((step, i) => {
+                const isDone = i < completedSteps;
+                const activeIntent = result?.recommendation.intent ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.recommendation.intent;
+                return (
+                  <Badge
+                    key={i}
+                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-500 ${
+                      isDone
+                        ? activeIntent === "intervene"
+                          ? "bg-red-100 text-red-800 border-red-300"
+                          : activeIntent === "explain"
+                          ? "bg-amber-100 text-amber-800 border-amber-300"
+                          : "bg-green-100 text-green-800 border-green-300"
+                        : "bg-gray-100 text-gray-500 border-gray-300"
+                    }`}
+                  >
+                    {isDone ? (
+                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                    ) : (
+                      <Clock className="h-4 w-4 mr-1.5 animate-pulse" />
+                    )}
+                    {step.label}
+                  </Badge>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Loading state */}
       {isAnalyzing && (
         <Card className="mb-6">
@@ -375,38 +434,6 @@ export default function BillGuardAnalysis() {
       {/* Results */}
       {result && !isAnalyzing && (
         <>
-          {/* Execution Timeline */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Execution Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                {result.execution_steps.map((step, i) => (
-                  <Badge
-                    key={i}
-                    className={`px-4 py-2 text-sm font-medium rounded-full ${
-                      step.status === "done"
-                        ? intent === "intervene"
-                          ? "bg-red-100 text-red-800 border-red-300"
-                          : intent === "explain"
-                          ? "bg-amber-100 text-amber-800 border-amber-300"
-                          : "bg-green-100 text-green-800 border-green-300"
-                        : "bg-gray-100 text-gray-500 border-gray-300"
-                    }`}
-                  >
-                    {step.status === "done" ? (
-                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                    ) : (
-                      <Clock className="h-4 w-4 mr-1.5" />
-                    )}
-                    {step.label}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Recommendation Banner */}
           {recColors && (
             <div className={`mb-6 border-l-4 ${recColors.border} ${recColors.bg} rounded-r-lg p-5`}>
