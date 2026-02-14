@@ -11,6 +11,7 @@ import LeadToCash from "./pages/LeadToCash";
 import OpportunityDetail from "./pages/OpportunityDetail";
 import HireToRetire from "./pages/HireToRetire";
 import EmployeeDetail from "./pages/EmployeeDetail";
+import BillGuardAnalysis from "./pages/BillGuardAnalysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/hire-to-retire" element={<HireToRetire />} />
           <Route path="/hire-to-retire/employee/:id" element={<EmployeeDetail />} />
           <Route path="/hire-to-retire/*" element={<HireToRetire />} />
+          <Route path="/bill-guard" element={<BillGuardAnalysis />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
