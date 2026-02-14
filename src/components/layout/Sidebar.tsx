@@ -12,6 +12,7 @@ import {
   Building2,
   Settings,
   ChevronRight,
+  Shield,
 } from "lucide-react";
 
 const navigation = [
@@ -49,6 +50,11 @@ const navigation = [
       { name: "Recruitment", href: "/hire-to-retire/recruitment", icon: UserCheck },
       { name: "Performance", href: "/hire-to-retire/performance", icon: TrendingUp },
     ],
+  },
+  {
+    name: "Bill Guard Analysis",
+    href: "/bill-guard",
+    icon: Shield,
   },
 ];
 
