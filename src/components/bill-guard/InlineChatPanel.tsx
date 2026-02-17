@@ -91,7 +91,7 @@ function generateId() {
   return crypto.randomUUID();
 }
 
-function trackPendoAgent(eventType: "prompt" | "response", props: {
+function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
   conversationId: string;
   messageId: string;
   content: string;
@@ -194,7 +194,7 @@ export function InlineChatPanel() {
         onDelta: (chunk) => upsertAssistant(chunk),
         onDone: () => {
           setIsLoading(false);
-          trackPendoAgent("response", {
+          trackPendoAgent("agent_response", {
             conversationId: conversationIdRef.current,
             messageId: responseMessageId,
             content: assistantSoFar,
