@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageSquare, Send, Loader2 } from "lucide-react";
+declare global {
+  interface Window {
+    pendo: any;
+  }
+}
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -80,6 +85,27 @@ async function streamChat({
   onDone();
 }
 
+const PENDO_AGENT_ID = "qzI-68_xayWnF-L8NXrPDpU5qoI";
+
+function generateId() {
+  return crypto.randomUUID();
+}
+
+function trackPendoAgent(eventType: "prompt" | "response", props: {
+  conversationId: string;
+  messageId: string;
+  content: string;
+}) {
+  if (window.pendo?.trackAgent) {
+    window.pendo.trackAgent(eventType, {
+      agentId: PENDO_AGENT_ID,
+      conversationId: props.conversationId,
+      messageId: props.messageId,
+      content: props.content,
+    });
+  }
+}
+
 const SUGGESTIONS = [
   "What's the difference between prevent, explain, and intervene?",
   "When should I dispute a weight variance?",
@@ -91,6 +117,7 @@ export function InlineChatPanel() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef<string>(generateId());
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -106,7 +133,15 @@ export function InlineChatPanel() {
     setInput("");
     setIsLoading(true);
 
+    const promptMessageId = generateId();
+    trackPendoAgent("prompt", {
+      conversationId: conversationIdRef.current,
+      messageId: promptMessageId,
+      content: trimmed,
+    });
+
     let assistantSoFar = "";
+    const responseMessageId = generateId();
     const upsertAssistant = (chunk: string) => {
       assistantSoFar += chunk;
       setMessages((prev) => {
@@ -122,7 +157,14 @@ export function InlineChatPanel() {
       await streamChat({
         messages: [...messages, userMsg],
         onDelta: (chunk) => upsertAssistant(chunk),
-        onDone: () => setIsLoading(false),
+        onDone: () => {
+          setIsLoading(false);
+          trackPendoAgent("response", {
+            conversationId: conversationIdRef.current,
+            messageId: responseMessageId,
+            content: assistantSoFar,
+          });
+        },
       });
     } catch (e) {
       console.error(e);
