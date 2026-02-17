@@ -117,9 +117,32 @@ const DEMO_PROMPTS = [
   "Explain how the confidence score determines the recommended action.",
   "When should a human intervene vs letting AI auto-correct?",
   "What are the best practices for reducing freight billing errors?",
+  "How does the weight variance threshold affect dispute decisions?",
+  "What happens when auto-correct is not allowed on an invoice?",
+  "Can you explain the difference between billed weight and rated weight?",
+  "What role does the dispute rate play in the AI recommendation?",
+  "How does BillGuard handle high-risk invoices differently?",
+  "What evidence does the agent log for each decision?",
 ];
 
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function pickRandomPrompts(count: number): string[] {
+  const shuffled = shuffleArray(DEMO_PROMPTS);
+  return shuffled.slice(0, count);
+}
+
+import { useUser } from "@/contexts/UserContext";
+
 export function InlineChatPanel() {
+  const { refreshUser } = useUser();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -195,14 +218,15 @@ export function InlineChatPanel() {
     conversationIdRef.current = generateId();
 
     let currentMessages: Msg[] = [];
-    // Loop indefinitely until stopped
     while (autoDemoRef.current) {
-      for (let i = 0; i < DEMO_PROMPTS.length; i++) {
+      // Pick 2-4 random prompts each cycle
+      const cyclePrompts = pickRandomPrompts(2 + Math.floor(Math.random() * 3));
+      for (let i = 0; i < cyclePrompts.length; i++) {
         if (!autoDemoRef.current) break;
         demoIndexRef.current = i;
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
-        const result = await send(DEMO_PROMPTS[i], currentMessages);
+        const result = await send(cyclePrompts[i], currentMessages);
         if (result) {
           currentMessages = result;
         } else {
@@ -210,10 +234,11 @@ export function InlineChatPanel() {
           break;
         }
       }
-      // Brief pause before restarting the cycle; clear chat for a fresh loop
+      // Pause, refresh visitor identity, clear chat for next cycle
       if (autoDemoRef.current) {
         await new Promise((r) => setTimeout(r, 2500));
         if (!autoDemoRef.current) break;
+        refreshUser(); // Rotate visitor for Pendo
         setMessages([]);
         currentMessages = [];
         conversationIdRef.current = generateId();
@@ -221,7 +246,7 @@ export function InlineChatPanel() {
     }
     setIsAutoDemo(false);
     autoDemoRef.current = false;
-  }, [send]);
+  }, [send, refreshUser]);
 
   const stopAutoDemo = useCallback(() => {
     autoDemoRef.current = false;
