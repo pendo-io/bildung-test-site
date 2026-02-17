@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageSquare, Send, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageSquare, Send, Loader2, Play, Square } from "lucide-react";
 declare global {
   interface Window {
     pendo: any;
@@ -112,6 +112,13 @@ const SUGGESTIONS = [
   "How does the confidence score work?",
 ];
 
+const DEMO_PROMPTS = [
+  "What is BillGuard and how does it help with invoice disputes?",
+  "Explain how the confidence score determines the recommended action.",
+  "When should a human intervene vs letting AI auto-correct?",
+  "What are the best practices for reducing freight billing errors?",
+];
+
 export function InlineChatPanel() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -119,16 +126,21 @@ export function InlineChatPanel() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string>(generateId());
 
+  const [isAutoDemo, setIsAutoDemo] = useState(false);
+  const autoDemoRef = useRef(false);
+  const demoIndexRef = useRef(0);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const send = async (text: string) => {
+  const send = useCallback(async (text: string, allMessages?: Msg[]) => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
     const userMsg: Msg = { role: "user", content: trimmed };
+    const currentMessages = allMessages ?? messages;
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setIsLoading(true);
@@ -155,7 +167,7 @@ export function InlineChatPanel() {
 
     try {
       await streamChat({
-        messages: [...messages, userMsg],
+        messages: [...currentMessages, userMsg],
         onDelta: (chunk) => upsertAssistant(chunk),
         onDone: () => {
           setIsLoading(false);
@@ -166,20 +178,67 @@ export function InlineChatPanel() {
           });
         },
       });
+      return [...currentMessages, userMsg, { role: "assistant" as const, content: assistantSoFar }];
     } catch (e) {
       console.error(e);
       toast.error("Failed to get response. Please try again.");
       setIsLoading(false);
+      return null;
     }
-  };
+  }, [messages, isLoading]);
+
+  const startAutoDemo = useCallback(async () => {
+    setIsAutoDemo(true);
+    autoDemoRef.current = true;
+    demoIndexRef.current = 0;
+    setMessages([]);
+    conversationIdRef.current = generateId();
+
+    let currentMessages: Msg[] = [];
+    for (let i = 0; i < DEMO_PROMPTS.length; i++) {
+      if (!autoDemoRef.current) break;
+      demoIndexRef.current = i;
+      // Small delay before sending next prompt
+      if (i > 0) await new Promise((r) => setTimeout(r, 1500));
+      if (!autoDemoRef.current) break;
+      const result = await send(DEMO_PROMPTS[i], currentMessages);
+      if (result) {
+        currentMessages = result;
+      } else {
+        break;
+      }
+    }
+    setIsAutoDemo(false);
+    autoDemoRef.current = false;
+  }, [send]);
+
+  const stopAutoDemo = useCallback(() => {
+    autoDemoRef.current = false;
+    setIsAutoDemo(false);
+  }, []);
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-3 bg-primary text-primary-foreground rounded-t-lg">
-        <CardTitle className="text-base flex items-center gap-2">
-          <MessageSquare className="h-4 w-4" />
-          BillGuard AI Assistant
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            BillGuard AI Assistant
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={isAutoDemo ? stopAutoDemo : startAutoDemo}
+            disabled={isLoading && !isAutoDemo}
+            className="h-7 px-2 text-xs text-primary-foreground hover:bg-primary-foreground/20"
+          >
+            {isAutoDemo ? (
+              <><Square className="h-3 w-3 mr-1" /> Stop</>
+            ) : (
+              <><Play className="h-3 w-3 mr-1" /> Demo</>
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col p-0 min-h-0">
         {/* Messages */}
