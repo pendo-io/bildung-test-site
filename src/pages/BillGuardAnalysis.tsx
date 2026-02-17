@@ -479,7 +479,7 @@ export default function BillGuardAnalysis() {
         </div>
 
         {/* Right column - Chat */}
-        <div className="w-[360px] shrink-0 sticky top-4 self-start h-[calc(100vh-8rem)]">
+        <div className="w-[360px] shrink-0 h-[600px]">
           <InlineChatPanel />
         </div>
       </div>
