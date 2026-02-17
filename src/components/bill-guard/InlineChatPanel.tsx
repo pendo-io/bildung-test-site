@@ -133,7 +133,7 @@ export function InlineChatPanel() {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 bg-blue-600 text-white rounded-t-lg">
+      <CardHeader className="pb-3 bg-primary text-primary-foreground rounded-t-lg">
         <CardTitle className="text-base flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
           BillGuard AI Assistant
@@ -165,7 +165,7 @@ export function InlineChatPanel() {
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`max-w-[90%] rounded-lg px-3 py-2 text-xs ${
-                    m.role === "user" ? "bg-blue-600 text-white" : "bg-muted"
+                    m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                   }`}
                 >
                   {m.role === "assistant" ? (
@@ -208,7 +208,7 @@ export function InlineChatPanel() {
               onClick={() => send(input)}
               disabled={!input.trim() || isLoading}
               size="icon"
-              className="bg-blue-600 hover:bg-blue-700 text-white shrink-0 h-[38px] w-[38px]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-[38px] w-[38px]"
             >
               <Send className="h-3.5 w-3.5" />
             </Button>
