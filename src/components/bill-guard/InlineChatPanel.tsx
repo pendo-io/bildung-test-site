@@ -195,17 +195,28 @@ export function InlineChatPanel() {
     conversationIdRef.current = generateId();
 
     let currentMessages: Msg[] = [];
-    for (let i = 0; i < DEMO_PROMPTS.length; i++) {
-      if (!autoDemoRef.current) break;
-      demoIndexRef.current = i;
-      // Small delay before sending next prompt
-      if (i > 0) await new Promise((r) => setTimeout(r, 1500));
-      if (!autoDemoRef.current) break;
-      const result = await send(DEMO_PROMPTS[i], currentMessages);
-      if (result) {
-        currentMessages = result;
-      } else {
-        break;
+    // Loop indefinitely until stopped
+    while (autoDemoRef.current) {
+      for (let i = 0; i < DEMO_PROMPTS.length; i++) {
+        if (!autoDemoRef.current) break;
+        demoIndexRef.current = i;
+        if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
+        if (!autoDemoRef.current) break;
+        const result = await send(DEMO_PROMPTS[i], currentMessages);
+        if (result) {
+          currentMessages = result;
+        } else {
+          autoDemoRef.current = false;
+          break;
+        }
+      }
+      // Brief pause before restarting the cycle; clear chat for a fresh loop
+      if (autoDemoRef.current) {
+        await new Promise((r) => setTimeout(r, 2500));
+        if (!autoDemoRef.current) break;
+        setMessages([]);
+        currentMessages = [];
+        conversationIdRef.current = generateId();
       }
     }
     setIsAutoDemo(false);
