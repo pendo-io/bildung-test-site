@@ -7,6 +7,7 @@ import { Shield, MessageSquare, CheckCircle2, Sparkles, Loader2, Clock, Copy, Ch
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { ChatPanel } from "@/components/bill-guard/ChatPanel";
+import { InlineChatPanel } from "@/components/bill-guard/InlineChatPanel";
 
 type Intent = "prevent" | "explain" | "intervene";
 
@@ -316,166 +317,172 @@ export default function BillGuardAnalysis() {
 
   return (
     <AppLayout title="Bill Guard Analysis" subtitle="AI-powered invoice dispute analysis">
-      {/* Title */}
-      <div className="flex items-center gap-2 mb-6">
-        <Shield className="h-7 w-7 text-destructive" />
-        <h2 className="text-2xl font-bold text-green-600">Intelligent Bill Guard</h2>
-      </div>
-
-      {/* Search */}
-      <Card className="mb-6">
-        <CardContent className="flex items-center gap-4 p-6">
-          <div className="relative flex-shrink-0 w-72">
-            <Input
-              value={invoiceId}
-              onChange={(e) => setInvoiceId(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-              placeholder="Enter invoice ID (e.g. INV-LOW-001)"
-              className="pr-10"
-            />
-            <MessageSquare className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-destructive" />
+      <div className="flex gap-6">
+        {/* Left column - Analysis */}
+        <div className="flex-1 min-w-0">
+          {/* Title */}
+          <div className="flex items-center gap-2 mb-6">
+            <Shield className="h-7 w-7 text-destructive" />
+            <h2 className="text-2xl font-bold text-green-600">Intelligent Bill Guard</h2>
           </div>
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-          >
-            {isAnalyzing ? <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Analyzing...</> : "Analyze"}
-          </Button>
-        </CardContent>
-      </Card>
 
-      {/* Scenario Legend - clickable IDs */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="text-base">Scenario Legend: <span className="text-sm font-normal text-muted-foreground">(click an ID to copy)</span></CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {scenarioLegend.map((item) => (
-              <div key={item.id} className="flex items-start gap-8">
-                <button
-                  onClick={() => handleCopyId(item.id)}
-                  className="font-medium text-sm w-36 shrink-0 text-left hover:underline flex items-center gap-1.5 text-blue-700 cursor-pointer"
-                  title={`Click to copy ${item.id}`}
-                >
-                  {copiedId === item.id ? (
-                    <Check className="h-3.5 w-3.5 text-green-600" />
-                  ) : (
-                    <Copy className="h-3.5 w-3.5 opacity-50" />
-                  )}
-                  {item.id}
-                </button>
-                <span className="text-sm">
-                  <span className={
-                    item.type === "green" ? "text-green-600 font-semibold" :
-                    item.type === "amber" ? "text-amber-600 font-semibold" :
-                    "text-red-600 font-semibold"
-                  }>
-                    {item.risk}
-                  </span>{" "}
-                  {item.description}{" "}
-                  <span className="font-bold">{item.action}</span>
-                  {item.extra}
-                </span>
+          {/* Search */}
+          <Card className="mb-6">
+            <CardContent className="flex items-center gap-4 p-6">
+              <div className="relative flex-shrink-0 w-72">
+                <Input
+                  value={invoiceId}
+                  onChange={(e) => setInvoiceId(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+                  placeholder="Enter invoice ID (e.g. INV-LOW-001)"
+                  className="pr-10"
+                />
+                <MessageSquare className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-destructive" />
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <Button
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={handleAnalyze}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Analyzing...</> : "Analyze"}
+              </Button>
+            </CardContent>
+          </Card>
 
-      {/* Execution Timeline - shows during analysis with progressive steps */}
-      {showTimeline && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">Execution Timeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {(result?.execution_steps ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.execution_steps ?? []).map((step, i) => {
-                const isDone = i < completedSteps;
-                const activeIntent = result?.recommendation.intent ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.recommendation.intent;
-                return (
-                  <Badge
-                    key={i}
-                    className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-500 ${
-                      isDone
-                        ? activeIntent === "intervene"
-                          ? "bg-red-100 text-red-800 border-red-300"
-                          : activeIntent === "explain"
-                          ? "bg-amber-100 text-amber-800 border-amber-300"
-                          : "bg-green-100 text-green-800 border-green-300"
-                        : "bg-gray-100 text-gray-500 border-gray-300"
-                    }`}
-                  >
-                    {isDone ? (
-                      <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                    ) : (
-                      <Clock className="h-4 w-4 mr-1.5 animate-pulse" />
-                    )}
-                    {step.label}
-                  </Badge>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          {/* Scenario Legend */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-base">Scenario Legend: <span className="text-sm font-normal text-muted-foreground">(click an ID to copy)</span></CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {scenarioLegend.map((item) => (
+                  <div key={item.id} className="flex items-start gap-8">
+                    <button
+                      onClick={() => handleCopyId(item.id)}
+                      className="font-medium text-sm w-36 shrink-0 text-left hover:underline flex items-center gap-1.5 text-blue-700 cursor-pointer"
+                      title={`Click to copy ${item.id}`}
+                    >
+                      {copiedId === item.id ? (
+                        <Check className="h-3.5 w-3.5 text-green-600" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 opacity-50" />
+                      )}
+                      {item.id}
+                    </button>
+                    <span className="text-sm">
+                      <span className={
+                        item.type === "green" ? "text-green-600 font-semibold" :
+                        item.type === "amber" ? "text-amber-600 font-semibold" :
+                        "text-red-600 font-semibold"
+                      }>
+                        {item.risk}
+                      </span>{" "}
+                      {item.description}{" "}
+                      <span className="font-bold">{item.action}</span>
+                      {item.extra}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Loading state */}
-      {isAnalyzing && (
-        <Card className="mb-6">
-          <CardContent className="flex flex-col items-center justify-center p-12 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <p className="text-muted-foreground font-medium">Agent analyzing invoice...</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Results */}
-      {result && !isAnalyzing && (
-        <>
-          {/* Recommendation Banner */}
-          {recColors && (
-            <div className={`mb-6 border-l-4 ${recColors.border} ${recColors.bg} rounded-r-lg p-5`}>
-              <h3 className={`text-lg font-bold ${recColors.text} uppercase`}>{result.recommendation.title}</h3>
-              <p className={`${recColors.textLight} text-sm`}>{result.recommendation.message}</p>
-            </div>
-          )}
-
-          {/* Agent Intelligence */}
-          {cardColors && (
-            <Card className={`mb-6 border-2 ${cardColors.border} ${cardColors.bg}`}>
+          {/* Execution Timeline */}
+          {showTimeline && (
+            <Card className="mb-6">
               <CardHeader>
-                <div className="flex items-center justify-between w-full">
-                  <CardTitle className={`text-lg ${cardColors.titleText}`}>Agent Intelligence</CardTitle>
-                  <span className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Sparkles className="h-4 w-4" /> Powered by <strong>{result.agent_json.model_used}</strong>
-                  </span>
-                </div>
+                <CardTitle className="text-lg">Execution Timeline</CardTitle>
               </CardHeader>
               <CardContent>
-                <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto font-mono">
-                  {JSON.stringify(result.agent_json, null, 2)}
-                </pre>
+                <div className="flex flex-wrap gap-3">
+                  {(result?.execution_steps ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.execution_steps ?? []).map((step, i) => {
+                    const isDone = i < completedSteps;
+                    const activeIntent = result?.recommendation.intent ?? invoiceDatabase[invoiceId.trim().toUpperCase()]?.recommendation.intent;
+                    return (
+                      <Badge
+                        key={i}
+                        className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-500 ${
+                          isDone
+                            ? activeIntent === "intervene"
+                              ? "bg-red-100 text-red-800 border-red-300"
+                              : activeIntent === "explain"
+                              ? "bg-amber-100 text-amber-800 border-amber-300"
+                              : "bg-green-100 text-green-800 border-green-300"
+                            : "bg-gray-100 text-gray-500 border-gray-300"
+                        }`}
+                      >
+                        {isDone ? (
+                          <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                        ) : (
+                          <Clock className="h-4 w-4 mr-1.5 animate-pulse" />
+                        )}
+                        {step.label}
+                      </Badge>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Source Metrics */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">Source Metrics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="bg-green-100 text-gray-800 p-4 rounded-lg text-sm overflow-x-auto font-mono">
-                {JSON.stringify(result.source_metrics, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-        </>
-      )}
-      <ChatPanel />
+          {/* Loading state */}
+          {isAnalyzing && (
+            <Card className="mb-6">
+              <CardContent className="flex flex-col items-center justify-center p-12 gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <p className="text-muted-foreground font-medium">Agent analyzing invoice...</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Results */}
+          {result && !isAnalyzing && (
+            <>
+              {recColors && (
+                <div className={`mb-6 border-l-4 ${recColors.border} ${recColors.bg} rounded-r-lg p-5`}>
+                  <h3 className={`text-lg font-bold ${recColors.text} uppercase`}>{result.recommendation.title}</h3>
+                  <p className={`${recColors.textLight} text-sm`}>{result.recommendation.message}</p>
+                </div>
+              )}
+
+              {cardColors && (
+                <Card className={`mb-6 border-2 ${cardColors.border} ${cardColors.bg}`}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between w-full">
+                      <CardTitle className={`text-lg ${cardColors.titleText}`}>Agent Intelligence</CardTitle>
+                      <span className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Sparkles className="h-4 w-4" /> Powered by <strong>{result.agent_json.model_used}</strong>
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto font-mono">
+                      {JSON.stringify(result.agent_json, null, 2)}
+                    </pre>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Source Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <pre className="bg-green-100 text-gray-800 p-4 rounded-lg text-sm overflow-x-auto font-mono">
+                    {JSON.stringify(result.source_metrics, null, 2)}
+                  </pre>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
+        {/* Right column - Chat */}
+        <div className="w-[360px] shrink-0 sticky top-4 self-start h-[calc(100vh-8rem)]">
+          <InlineChatPanel />
+        </div>
+      </div>
     </AppLayout>
   );
 }
