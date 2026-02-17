@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, MessageSquare, CheckCircle2, Sparkles, Loader2, Clock, Copy, Check } from "lucide-react";
 import { useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { ChatPanel } from "@/components/bill-guard/ChatPanel";
 
 type Intent = "prevent" | "explain" | "intervene";
 
@@ -474,6 +475,7 @@ export default function BillGuardAnalysis() {
           </Card>
         </>
       )}
+      <ChatPanel />
     </AppLayout>
   );
 }
