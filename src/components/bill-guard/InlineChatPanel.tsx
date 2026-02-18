@@ -111,7 +111,7 @@ function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
       content: props.content,
       modelUsed: "gemini-3-flash-preview",
       suggestedPrompt: props.suggestedPrompt ?? false,
-      toolsUsed: [],
+      toolsUsed: eventType === "agent_response" ? ["knowledge_base"] : [],
       fileUploaded: false,
     });
   } else {
@@ -222,6 +222,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
             conversationId: conversationIdRef.current,
             messageId: responseMessageId,
             content: assistantSoFar,
+            suggestedPrompt: isSuggested,
           });
         },
       });
