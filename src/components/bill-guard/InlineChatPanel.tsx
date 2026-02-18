@@ -95,6 +95,7 @@ function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
   conversationId: string;
   messageId: string;
   content: string;
+  suggestedPrompt?: boolean;
 }) {
   if (window.pendo?.trackAgent) {
     console.log(`[Pendo trackAgent] eventType="${eventType}"`, {
@@ -108,6 +109,10 @@ function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
       conversationId: props.conversationId,
       messageId: props.messageId,
       content: props.content,
+      modelUsed: "gemini-3-flash-preview",
+      suggestedPrompt: props.suggestedPrompt ?? false,
+      toolsUsed: [],
+      fileUploaded: false,
     });
   } else {
     console.warn("[Pendo trackAgent] window.pendo.trackAgent is NOT available", {
@@ -186,10 +191,12 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
     setIsLoading(true);
 
     const promptMessageId = generateId();
+    const isSuggested = SUGGESTIONS.includes(trimmed) || DEMO_PROMPTS.includes(trimmed);
     trackPendoAgent("prompt", {
       conversationId: conversationIdRef.current,
       messageId: promptMessageId,
       content: trimmed,
+      suggestedPrompt: isSuggested,
     });
 
     let assistantSoFar = "";
