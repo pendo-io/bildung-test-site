@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Shield, MessageSquare, CheckCircle2, Sparkles, Loader2, Clock, Copy, Check } from "lucide-react";
 import { useState, useRef, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ChatPanel } from "@/components/bill-guard/ChatPanel";
 import { InlineChatPanel } from "@/components/bill-guard/InlineChatPanel";
+import { runBotSequence, type AppBotCallbacks } from "@/lib/appBot";
 
 type Intent = "prevent" | "explain" | "intervene";
 
@@ -256,6 +258,7 @@ const intentCardColors: Record<Intent, { border: string; bg: string; titleText: 
 };
 
 export default function BillGuardAnalysis() {
+  const navigate = useNavigate();
   const [invoiceId, setInvoiceId] = useState("");
   const [analysisResult, setAnalysisResult] = useState<InvoiceData | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -336,6 +339,25 @@ export default function BillGuardAnalysis() {
     toast.success(`Copied ${id} to input`);
     setTimeout(() => setCopiedId(null), 1500);
   };
+
+  const handleRunBotSequence = useCallback(async (shouldStop: () => boolean) => {
+    const callbacks: AppBotCallbacks = {
+      navigate: (path: string) => navigate(path),
+      clickOpportunity: (id: string) => navigate(`/lead-to-cash/opportunity/${id}`),
+      clickPO: (id: string) => navigate(`/source-to-pay/purchase-order/${id}`),
+      clickEmployee: (id: string) => navigate(`/hire-to-retire/employee/${id}`),
+      // For forms, we navigate to the page - the bot can't directly open dialogs on other pages
+      // So we just navigate to the page as a browsing action
+      fillAndSubmitOpportunity: () => navigate("/lead-to-cash"),
+      fillAndSubmitPO: () => navigate("/source-to-pay"),
+      fillAndSubmitEmployee: () => navigate("/hire-to-retire"),
+    };
+    await runBotSequence(callbacks, shouldStop);
+    // Navigate back to bill-guard
+    if (!shouldStop()) {
+      navigate("/bill-guard");
+    }
+  }, [navigate]);
 
   const result = analysisResult;
   const intent = result?.recommendation.intent;
@@ -507,7 +529,7 @@ export default function BillGuardAnalysis() {
 
         {/* Right column - Chat */}
         <div className="w-[360px] shrink-0 h-[600px]">
-          <InlineChatPanel onAnalyze={handleRandomAnalyze} />
+          <InlineChatPanel onAnalyze={handleRandomAnalyze} onRunBotSequence={handleRunBotSequence} />
         </div>
       </div>
     </AppLayout>
