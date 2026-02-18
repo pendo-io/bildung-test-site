@@ -173,6 +173,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
   const autoDemoRef = useRef(false);
   const demoIndexRef = useRef(0);
   const sendBtnRef = useRef<HTMLButtonElement>(null);
+  const sendResolveRef = useRef<((result: Msg[] | null) => void) | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -239,11 +240,14 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
           });
         },
       });
-      return [...currentMessages, userMsg, { role: "assistant" as const, content: assistantSoFar, messageId: responseMessageId }];
+      const finalMessages = [...currentMessages, userMsg, { role: "assistant" as const, content: assistantSoFar, messageId: responseMessageId }];
+      if (sendResolveRef.current) { sendResolveRef.current(finalMessages); sendResolveRef.current = null; }
+      return finalMessages;
     } catch (e) {
       console.error(e);
       toast.error("Failed to get response. Please try again.");
       setIsLoading(false);
+      if (sendResolveRef.current) { sendResolveRef.current(null); sendResolveRef.current = null; }
       return null;
     }
   }, [messages, isLoading]);
@@ -264,12 +268,19 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
         demoIndexRef.current = i;
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
-        // Set input text, then click the Send button for visual effect
+        // Set input text, then click the Send button
         setInput(cyclePrompts[i]);
         await new Promise((r) => setTimeout(r, 300));
         if (!autoDemoRef.current) break;
-        if (sendBtnRef.current) sendBtnRef.current.click();
-        const result = await send(cyclePrompts[i], currentMessages, true);
+        // Create a promise that send() will resolve when done
+        const resultPromise = new Promise<Msg[] | null>((resolve) => {
+          sendResolveRef.current = resolve;
+        });
+        if (sendBtnRef.current) {
+          sendBtnRef.current.removeAttribute("disabled");
+          sendBtnRef.current.click();
+        }
+        const result = await resultPromise;
         if (result) {
           currentMessages = result;
           // Auto-react to the last assistant message (~70% chance)
