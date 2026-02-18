@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Shield, MessageSquare, CheckCircle2, Sparkles, Loader2, Clock, Copy, Check } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { ChatPanel } from "@/components/bill-guard/ChatPanel";
 import { InlineChatPanel } from "@/components/bill-guard/InlineChatPanel";
@@ -302,6 +302,33 @@ export default function BillGuardAnalysis() {
     timersRef.current.push(t);
   };
 
+  const invoiceIds = useMemo(() => Object.keys(invoiceDatabase), []);
+
+  const handleRandomAnalyze = useCallback(() => {
+    const randomId = invoiceIds[Math.floor(Math.random() * invoiceIds.length)];
+    setInvoiceId(randomId);
+    // Trigger analysis with the random ID
+    const data = invoiceDatabase[randomId];
+    if (!data) return;
+    clearTimers();
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    setCompletedSteps(0);
+    setShowTimeline(true);
+    const stepCount = data.execution_steps.length;
+    const stepDelay = 600;
+    for (let i = 0; i < stepCount; i++) {
+      const t = setTimeout(() => setCompletedSteps(i + 1), stepDelay * (i + 1));
+      timersRef.current.push(t);
+    }
+    const finalDelay = stepDelay * (stepCount + 1);
+    const t2 = setTimeout(() => {
+      setAnalysisResult(data);
+      setIsAnalyzing(false);
+    }, finalDelay);
+    timersRef.current.push(t2);
+  }, [invoiceIds, clearTimers]);
+
   const handleCopyId = (id: string) => {
     navigator.clipboard.writeText(id);
     setInvoiceId(id);
@@ -480,7 +507,7 @@ export default function BillGuardAnalysis() {
 
         {/* Right column - Chat */}
         <div className="w-[360px] shrink-0 h-[600px]">
-          <InlineChatPanel />
+          <InlineChatPanel onAnalyze={handleRandomAnalyze} />
         </div>
       </div>
     </AppLayout>
