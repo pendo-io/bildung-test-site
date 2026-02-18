@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageSquare, Send, Loader2, Play, Square } from "lucide-react";
+import { MessageSquare, Send, Loader2, Play, Square, ThumbsUp, ThumbsDown } from "lucide-react";
 declare global {
   interface Window {
     pendo: any;
@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; messageId?: string; reaction?: "positive" | "negative" };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/bill-guard-chat`;
 
@@ -91,7 +91,7 @@ function generateId() {
   return crypto.randomUUID();
 }
 
-function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
+function trackPendoAgent(eventType: "prompt" | "agent_response" | "user_reaction", props: {
   conversationId: string;
   messageId: string;
   content: string;
@@ -179,6 +179,18 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
     }
   }, [messages]);
 
+  const reactToMessage = useCallback((messageId: string, reaction: "positive" | "negative") => {
+    setMessages((prev) =>
+      prev.map((m) => (m.messageId === messageId ? { ...m, reaction } : m))
+    );
+    trackPendoAgent("user_reaction", {
+      conversationId: conversationIdRef.current,
+      messageId,
+      content: reaction,
+      suggestedPrompt: false,
+    });
+  }, []);
+
   const send = useCallback(async (text: string, allMessages?: Msg[], skipAnalyze?: boolean) => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
@@ -206,9 +218,9 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant") {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar, messageId: responseMessageId } : m));
         }
-        return [...prev, { role: "assistant", content: assistantSoFar }];
+        return [...prev, { role: "assistant", content: assistantSoFar, messageId: responseMessageId }];
       });
     };
 
@@ -226,7 +238,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
           });
         },
       });
-      return [...currentMessages, userMsg, { role: "assistant" as const, content: assistantSoFar }];
+      return [...currentMessages, userMsg, { role: "assistant" as const, content: assistantSoFar, messageId: responseMessageId }];
     } catch (e) {
       console.error(e);
       toast.error("Failed to get response. Please try again.");
@@ -259,6 +271,15 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
         const result = await send(cyclePrompts[i], currentMessages, true);
         if (result) {
           currentMessages = result;
+          // Auto-react to the last assistant message (~70% chance)
+          if (autoDemoRef.current && Math.random() < 0.7) {
+            await new Promise((r) => setTimeout(r, 600 + Math.random() * 800));
+            const lastAssistant = [...result].reverse().find((m) => m.role === "assistant" && m.messageId);
+            if (lastAssistant?.messageId) {
+              const reaction = Math.random() < 0.8 ? "positive" : "negative";
+              reactToMessage(lastAssistant.messageId, reaction as "positive" | "negative");
+            }
+          }
         } else {
           autoDemoRef.current = false;
           break;
@@ -336,9 +357,29 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
                   }`}
                 >
                   {m.role === "assistant" ? (
-                    <div className="prose prose-xs max-w-none dark:prose-invert [&_p]:text-xs [&_li]:text-xs [&_h3]:text-sm">
-                      <ReactMarkdown>{m.content}</ReactMarkdown>
-                    </div>
+                    <>
+                      <div className="prose prose-xs max-w-none dark:prose-invert [&_p]:text-xs [&_li]:text-xs [&_h3]:text-sm">
+                        <ReactMarkdown>{m.content}</ReactMarkdown>
+                      </div>
+                      {m.messageId && (
+                        <div className="flex items-center gap-1 mt-1.5 pt-1.5 border-t border-border/40">
+                          <button
+                            onClick={() => reactToMessage(m.messageId!, "positive")}
+                            className={`p-0.5 rounded hover:bg-background/60 transition-colors ${m.reaction === "positive" ? "text-green-600" : "text-muted-foreground/50"}`}
+                            aria-label="Thumbs up"
+                          >
+                            <ThumbsUp className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => reactToMessage(m.messageId!, "negative")}
+                            className={`p-0.5 rounded hover:bg-background/60 transition-colors ${m.reaction === "negative" ? "text-destructive" : "text-muted-foreground/50"}`}
+                            aria-label="Thumbs down"
+                          >
+                            <ThumbsDown className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     m.content
                   )}
