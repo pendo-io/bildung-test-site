@@ -141,7 +141,11 @@ function pickRandomPrompts(count: number): string[] {
 
 import { useUser } from "@/contexts/UserContext";
 
-export function InlineChatPanel() {
+interface InlineChatPanelProps {
+  onAnalyze?: () => void;
+}
+
+export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
   const { refreshUser } = useUser();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -226,6 +230,11 @@ export function InlineChatPanel() {
         demoIndexRef.current = i;
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
+        // Simulate clicking the Analyze button before each prompt
+        if (onAnalyze) {
+          onAnalyze();
+          await new Promise((r) => setTimeout(r, 800));
+        }
         const result = await send(cyclePrompts[i], currentMessages);
         if (result) {
           currentMessages = result;
