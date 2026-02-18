@@ -97,11 +97,22 @@ function trackPendoAgent(eventType: "prompt" | "agent_response", props: {
   content: string;
 }) {
   if (window.pendo?.trackAgent) {
+    console.log(`[Pendo trackAgent] eventType="${eventType}"`, {
+      agentId: PENDO_AGENT_ID,
+      conversationId: props.conversationId,
+      messageId: props.messageId,
+      contentLength: props.content.length,
+    });
     window.pendo.trackAgent(eventType, {
       agentId: PENDO_AGENT_ID,
       conversationId: props.conversationId,
       messageId: props.messageId,
       content: props.content,
+    });
+  } else {
+    console.warn("[Pendo trackAgent] window.pendo.trackAgent is NOT available", {
+      pendoExists: !!window.pendo,
+      trackAgentExists: !!window.pendo?.trackAgent,
     });
   }
 }
