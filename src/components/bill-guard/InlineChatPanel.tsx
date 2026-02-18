@@ -172,6 +172,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
   const [isAutoDemo, setIsAutoDemo] = useState(false);
   const autoDemoRef = useRef(false);
   const demoIndexRef = useRef(0);
+  const sendBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -263,11 +264,11 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
         demoIndexRef.current = i;
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
-        // Simulate clicking the Analyze button before each prompt
-        if (onAnalyze) {
-          onAnalyze();
-          await new Promise((r) => setTimeout(r, 800));
-        }
+        // Set input text, then click the Send button for visual effect
+        setInput(cyclePrompts[i]);
+        await new Promise((r) => setTimeout(r, 300));
+        if (!autoDemoRef.current) break;
+        if (sendBtnRef.current) sendBtnRef.current.click();
         const result = await send(cyclePrompts[i], currentMessages, true);
         if (result) {
           currentMessages = result;
@@ -413,6 +414,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
               rows={1}
             />
             <Button
+              ref={sendBtnRef}
               onClick={() => send(input)}
               disabled={!input.trim() || isLoading}
               size="icon"
