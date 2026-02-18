@@ -174,9 +174,11 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
     }
   }, [messages]);
 
-  const send = useCallback(async (text: string, allMessages?: Msg[]) => {
+  const send = useCallback(async (text: string, allMessages?: Msg[], skipAnalyze?: boolean) => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
+    // Trigger analyze before each prompt (unless skipped, e.g. from demo which handles it separately)
+    if (!skipAnalyze && onAnalyze) onAnalyze();
     const userMsg: Msg = { role: "user", content: trimmed };
     const currentMessages = allMessages ?? messages;
     setMessages((prev) => [...prev, userMsg]);
@@ -246,7 +248,7 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
           onAnalyze();
           await new Promise((r) => setTimeout(r, 800));
         }
-        const result = await send(cyclePrompts[i], currentMessages);
+        const result = await send(cyclePrompts[i], currentMessages, true);
         if (result) {
           currentMessages = result;
         } else {
