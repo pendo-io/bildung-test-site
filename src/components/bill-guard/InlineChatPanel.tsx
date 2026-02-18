@@ -159,9 +159,10 @@ import { useUser } from "@/contexts/UserContext";
 
 interface InlineChatPanelProps {
   onAnalyze?: () => void;
+  onRunBotSequence?: (shouldStop: () => boolean) => Promise<void>;
 }
 
-export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
+export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanelProps) {
   const { refreshUser } = useUser();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -297,11 +298,21 @@ export function InlineChatPanel({ onAnalyze }: InlineChatPanelProps) {
           break;
         }
       }
-      // Pause, refresh visitor identity, clear chat for next cycle
+      // Pause, refresh visitor identity, run bot in other areas, clear chat for next cycle
       if (autoDemoRef.current) {
         await new Promise((r) => setTimeout(r, 2500));
         if (!autoDemoRef.current) break;
         refreshUser(); // Rotate visitor for Pendo
+        
+        // Run bot sequence in other areas of the app
+        if (onRunBotSequence) {
+          console.log("[AppBot] Starting bot sequence in other app areas...");
+          await onRunBotSequence(() => !autoDemoRef.current);
+          // Navigate back to Bill Guard after bot sequence
+          if (!autoDemoRef.current) break;
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+        
         setMessages([]);
         currentMessages = [];
         conversationIdRef.current = generateId();
