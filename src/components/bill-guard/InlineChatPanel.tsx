@@ -141,6 +141,43 @@ const DEMO_PROMPTS = [
   "What evidence does the agent log for each decision?",
 ];
 
+const RAGE_PROMPTS = [
+  "I ALREADY ASKED THIS AND YOU GAVE ME THE WRONG ANSWER",
+  "THIS IS THE THIRD TIME I AM ASKING ABOUT WEIGHT VARIANCE AND I STILL DONT UNDERSTAND",
+  "WHY DOES THE SYSTEM KEEP RECOMMENDING EXPLAIN WHEN IT SHOULD BE INTERVENE",
+  "I NEED HELP WITH MY INVOICE AND NOTHING IS WORKING",
+  "THE CONFIDENCE SCORE IS WRONG AGAIN, FIX THIS NOW",
+  "I have asked about this dispute THREE TIMES and keep getting different answers",
+  "THIS IS UNACCEPTABLE. The auto-correct failed on invoice 2024-1847 AGAIN",
+  "I CANT GET A STRAIGHT ANSWER ABOUT WHY MY DISPUTE WAS REJECTED",
+  "HOW MANY TIMES DO I HAVE TO ASK BEFORE I GET THE RIGHT INFORMATION",
+  "The system recommended prevent but it should have been intervene. I ALREADY REPORTED THIS",
+  "NOTHING IS WORKING. I need to escalate this dispute immediately",
+  "I KEEP CLICKING INTERVENE BUT THE SYSTEM IGNORES MY INPUT",
+  "WHY IS THIS SO DIFFICULT. Just tell me if the invoice is correct or not",
+  "I AM STILL WAITING FOR AN ANSWER ABOUT THE BILLING ERROR FROM LAST WEEK",
+  "THIS TOOL IS NOT HELPING ME AT ALL WITH MY FREIGHT DISPUTES",
+];
+
+// ~20% chance a prompt in a cycle is a rage prompt
+function pickDemoPrompts(count: number): string[] {
+  const result: string[] = [];
+  const shuffledNormal = shuffleArray(DEMO_PROMPTS);
+  const shuffledRage = shuffleArray(RAGE_PROMPTS);
+  let normalIdx = 0;
+  let rageIdx = 0;
+  for (let i = 0; i < count; i++) {
+    if (Math.random() < 0.2 && rageIdx < shuffledRage.length) {
+      result.push(shuffledRage[rageIdx++]);
+    } else if (normalIdx < shuffledNormal.length) {
+      result.push(shuffledNormal[normalIdx++]);
+    } else {
+      result.push(shuffledRage[rageIdx++ % shuffledRage.length]);
+    }
+  }
+  return result;
+}
+
 function shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr];
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -148,11 +185,6 @@ function shuffleArray<T>(arr: T[]): T[] {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
-}
-
-function pickRandomPrompts(count: number): string[] {
-  const shuffled = shuffleArray(DEMO_PROMPTS);
-  return shuffled.slice(0, count);
 }
 
 import { useUser } from "@/contexts/UserContext";
@@ -163,7 +195,7 @@ interface InlineChatPanelProps {
 }
 
 export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanelProps) {
-  const { refreshUser } = useUser();
+  const { refreshUser, setUserByIndex } = useUser();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -206,7 +238,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     setIsLoading(true);
 
     const promptMessageId = generateId();
-    const isSuggested = SUGGESTIONS.includes(trimmed) || DEMO_PROMPTS.includes(trimmed);
+    const isSuggested = SUGGESTIONS.includes(trimmed) || DEMO_PROMPTS.includes(trimmed) || RAGE_PROMPTS.includes(trimmed);
     trackPendoAgent("prompt", {
       conversationId: conversationIdRef.current,
       messageId: promptMessageId,
@@ -254,8 +286,15 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
   }, [messages, isLoading]);
 
   const startAutoDemo = useCallback(async () => {
+    let visitorIndex = 0;
+
     setIsAutoDemo(true);
     autoDemoRef.current = true;
+    demoIndexRef.current = 0;
+    setMessages([]);
+    conversationIdRef.current = generateId();
+    // Set first visitor
+    setUserByIndex(visitorIndex);
     demoIndexRef.current = 0;
     setMessages([]);
     conversationIdRef.current = generateId();
@@ -263,7 +302,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     let currentMessages: Msg[] = [];
     while (autoDemoRef.current) {
       // Pick 2-4 random prompts each cycle
-      const cyclePrompts = pickRandomPrompts(2 + Math.floor(Math.random() * 3));
+      const cyclePrompts = pickDemoPrompts(2 + Math.floor(Math.random() * 3));
       for (let i = 0; i < cyclePrompts.length; i++) {
         if (!autoDemoRef.current) break;
         demoIndexRef.current = i;
@@ -302,7 +341,8 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
       if (autoDemoRef.current) {
         await new Promise((r) => setTimeout(r, 2500));
         if (!autoDemoRef.current) break;
-        refreshUser(); // Rotate visitor for Pendo
+        visitorIndex = (visitorIndex + 1) % 50; // Cycle through all 50 visitors sequentially
+        setUserByIndex(visitorIndex);
         
         // Run bot sequence in other areas of the app
         if (onRunBotSequence) {
@@ -320,7 +360,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     }
     setIsAutoDemo(false);
     autoDemoRef.current = false;
-  }, [send, refreshUser]);
+  }, [send, setUserByIndex]);
 
   const stopAutoDemo = useCallback(() => {
     autoDemoRef.current = false;
