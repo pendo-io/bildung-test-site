@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { generateUserInfo, UserInfo } from '@/lib/userGenerator';
+import { generateUserInfo, generateUserInfoByIndex, UserInfo } from '@/lib/userGenerator';
 import { initializePendo, updatePendoVisitor } from '@/lib/pendo';
 
 interface UserContextType {
   userInfo: UserInfo;
   refreshUser: () => void;
+  setUserByIndex: (index: number) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -15,6 +16,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(() => {
     setUserInfo(generateUserInfo());
+  }, []);
+
+  const setUserByIndex = useCallback((index: number) => {
+    setUserInfo(generateUserInfoByIndex(index));
   }, []);
 
   // Auto-refresh every 30 seconds to simulate different visitors
@@ -47,7 +52,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, [userInfo]);
 
   return (
-    <UserContext.Provider value={{ userInfo, refreshUser }}>
+    <UserContext.Provider value={{ userInfo, refreshUser, setUserByIndex }}>
       {children}
     </UserContext.Provider>
   );

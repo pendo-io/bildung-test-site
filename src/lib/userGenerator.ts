@@ -161,6 +161,22 @@ function getVisitorId(accString: string): { visitor: string; role: UserRole } {
   return { visitor, role };
 }
 
+export function generateUserInfoByIndex(index: number): UserInfo {
+  const visitorIndex = index % visitors.length;
+  const visitorName = visitors[visitorIndex];
+  const role = roles[visitorIndex % roles.length];
+  const account_id = accounts[visitorIndex % accounts.length];
+  const accString = account_id.replace(/\s/g, "");
+  const visitorId = `${visitorName}@${accString}.com`;
+
+  return {
+    account: account_id,
+    visitor: visitorName,
+    visitorId,
+    role,
+  };
+}
+
 export function generateUserInfo(): UserInfo {
   const urlParams = new URLSearchParams(window.location.search);
   const urlVisitor = urlParams.get("visitor");
