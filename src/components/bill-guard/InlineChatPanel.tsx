@@ -286,18 +286,16 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
   }, [messages, isLoading]);
 
   const startAutoDemo = useCallback(async () => {
-    let visitorIndex = 0;
+    // Start at a random visitor index instead of always 0 (Michael)
+    let visitorIndex = Math.floor(Math.random() * 50);
 
     setIsAutoDemo(true);
     autoDemoRef.current = true;
     demoIndexRef.current = 0;
     setMessages([]);
     conversationIdRef.current = generateId();
-    // Set first visitor
+    // Set first visitor to random index
     setUserByIndex(visitorIndex);
-    demoIndexRef.current = 0;
-    setMessages([]);
-    conversationIdRef.current = generateId();
 
     let currentMessages: Msg[] = [];
     while (autoDemoRef.current) {
@@ -366,6 +364,18 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     autoDemoRef.current = false;
     setIsAutoDemo(false);
   }, []);
+
+  // Auto-start demo if ?demo=true is in the URL
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (autoStartedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === 'true') {
+      autoStartedRef.current = true;
+      // Small delay to let Pendo load
+      setTimeout(() => startAutoDemo(), 2000);
+    }
+  }, [startAutoDemo]);
 
   return (
     <Card className="h-full flex flex-col">
