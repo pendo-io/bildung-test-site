@@ -194,11 +194,12 @@ export function CloseOpportunityDialog({
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} data-pendo-id="cancel-close-opportunity">
               Cancel
             </Button>
             <Button
               type="submit"
+              data-pendo-id={outcome === "won" ? "mark-as-won" : "mark-as-lost"}
               className={cn(
                 outcome === "won" && "bg-success hover:bg-success/90",
                 outcome === "lost" && "bg-destructive hover:bg-destructive/90"

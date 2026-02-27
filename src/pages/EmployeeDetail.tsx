@@ -113,6 +113,7 @@ export default function EmployeeDetail() {
         variant="ghost"
         className="mb-6"
         onClick={() => navigate("/hire-to-retire")}
+        data-pendo-id="back-to-employees"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Employees
@@ -171,7 +172,7 @@ export default function EmployeeDetail() {
           <Card className="card-elevated">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Employee Information</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" data-pendo-id="edit-employee">
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </Button>
@@ -268,15 +269,15 @@ export default function EmployeeDetail() {
               <CardTitle className="text-base">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="view-documents">
                 <FileText className="h-4 w-4 mr-2" />
                 View Documents
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="training-records">
                 <GraduationCap className="h-4 w-4 mr-2" />
                 Training Records
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="performance-reviews">
                 <Briefcase className="h-4 w-4 mr-2" />
                 Performance Reviews
               </Button>

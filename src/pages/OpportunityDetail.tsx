@@ -170,6 +170,7 @@ export default function OpportunityDetail() {
         variant="ghost"
         className="mb-6"
         onClick={() => navigate("/lead-to-cash")}
+        data-pendo-id="back-to-pipeline"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Pipeline
@@ -229,7 +230,7 @@ export default function OpportunityDetail() {
           <Card className="card-elevated">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Opportunity Details</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" data-pendo-id="edit-opportunity">
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </Button>

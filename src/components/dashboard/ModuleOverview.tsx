@@ -48,6 +48,7 @@ export function ModuleOverview({
   return (
     <Link
       to={href}
+      data-pendo-id={`module-${title.toLowerCase().replace(/\s+/g, "-")}`}
       className={cn(
         "group block rounded-xl border-2 bg-card p-6 transition-all duration-300 card-elevated card-hover",
         colors.border,

@@ -86,6 +86,7 @@ export function Sidebar() {
             <div key={item.name}>
               <NavLink
                 to={item.href}
+                data-pendo-id={`nav-${item.name.toLowerCase().replace(/\s+/g, "-")}`}
                 className={({ isActive: active }) =>
                   cn(
                     "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
@@ -119,6 +120,7 @@ export function Sidebar() {
                     <NavLink
                       key={child.name}
                       to={child.href}
+                      data-pendo-id={`nav-${child.name.toLowerCase().replace(/\s+/g, "-")}`}
                       className={({ isActive: childActive }) =>
                         cn(
                           "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
@@ -142,6 +144,7 @@ export function Sidebar() {
         <div className="border-t border-sidebar-border p-4">
           <NavLink
             to="/settings"
+            data-pendo-id="nav-settings"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-muted hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-colors"
           >
             <Settings className="h-5 w-5" />

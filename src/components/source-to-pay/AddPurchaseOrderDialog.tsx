@@ -247,10 +247,11 @@ export function AddPurchaseOrderDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              data-pendo-id="cancel-add-po"
             >
               Cancel
             </Button>
-            <Button type="submit">Submit for Approval</Button>
+            <Button type="submit" data-pendo-id="submit-for-approval">Submit for Approval</Button>
           </div>
         </form>
       </DialogContent>
