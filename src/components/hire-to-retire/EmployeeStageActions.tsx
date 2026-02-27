@@ -173,6 +173,7 @@ export function EmployeeStageActions({
               onClick={onAdvanceStage}
               disabled={!allActionsCompleted}
               className="flex-1"
+              data-pendo-id={`advance-stage-${config.nextAction.toLowerCase().replace(/\s+/g, "-")}`}
             >
               {config.nextAction}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -181,6 +182,7 @@ export function EmployeeStageActions({
               variant="outline"
               onClick={onTerminate}
               className="text-destructive hover:text-destructive"
+              data-pendo-id="terminate"
             >
               <UserX className="mr-2 h-4 w-4" />
               Terminate

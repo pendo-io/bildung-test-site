@@ -245,10 +245,11 @@ export function AddOpportunityDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              data-pendo-id="cancel-add-opportunity"
             >
               Cancel
             </Button>
-            <Button type="submit">Create Opportunity</Button>
+            <Button type="submit" data-pendo-id="create-opportunity">Create Opportunity</Button>
           </div>
         </form>
       </DialogContent>

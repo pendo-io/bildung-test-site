@@ -108,6 +108,7 @@ export default function PurchaseOrderDetail() {
         variant="ghost"
         className="mb-6"
         onClick={() => navigate("/source-to-pay")}
+        data-pendo-id="back-to-purchase-orders"
       >
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back to Purchase Orders
@@ -166,7 +167,7 @@ export default function PurchaseOrderDetail() {
           <Card className="card-elevated">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Order Details</CardTitle>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" data-pendo-id="edit-po">
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
               </Button>
@@ -263,15 +264,15 @@ export default function PurchaseOrderDetail() {
               <CardTitle className="text-base">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="view-documents">
                 <FileText className="h-4 w-4 mr-2" />
                 View Documents
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="track-shipment">
                 <Truck className="h-4 w-4 mr-2" />
                 Track Shipment
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button variant="outline" className="w-full justify-start" data-pendo-id="contact-vendor">
                 <Building2 className="h-4 w-4 mr-2" />
                 Contact Vendor
               </Button>

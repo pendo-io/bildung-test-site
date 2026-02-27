@@ -173,11 +173,12 @@ export function StageActions({
               onClick={onAdvanceStage}
               disabled={!allActionsCompleted}
               className="flex-1"
+              data-pendo-id={`advance-stage-${config.nextAction.toLowerCase().replace(/\s+/g, "-")}`}
             >
               {config.nextAction}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button variant="outline" onClick={onMarkLost} className="text-destructive hover:text-destructive">
+            <Button variant="outline" onClick={onMarkLost} className="text-destructive hover:text-destructive" data-pendo-id="mark-lost">
               <X className="mr-2 h-4 w-4" />
               Mark Lost
             </Button>

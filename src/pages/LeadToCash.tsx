@@ -167,7 +167,7 @@ export default function LeadToCash() {
               High-value deals in progress
             </p>
           </div>
-          <Button onClick={() => setShowAddDialog(true)}>Add Opportunity</Button>
+          <Button onClick={() => setShowAddDialog(true)} data-pendo-id="add-opportunity">Add Opportunity</Button>
         </div>
 
         <div className="space-y-4">
@@ -175,6 +175,7 @@ export default function LeadToCash() {
             <div
               key={opp.id}
               onClick={() => navigate(`/lead-to-cash/opportunity/${opp.id}`)}
+              data-pendo-id="opportunity-row"
               className="flex items-center gap-6 p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer"
             >
               <div className="flex-1">
@@ -205,7 +206,7 @@ export default function LeadToCash() {
                 </p>
                 <p className="text-xs text-muted-foreground">Deal Value</p>
               </div>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" data-pendo-id="view-opportunity">
                 View
               </Button>
             </div>

@@ -391,6 +391,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
             onClick={isAutoDemo ? stopAutoDemo : startAutoDemo}
             disabled={isLoading && !isAutoDemo}
             className="h-7 px-2 text-xs text-primary-foreground hover:bg-primary-foreground/20"
+            data-pendo-id={isAutoDemo ? "stop-demo" : "start-demo"}
           >
             {isAutoDemo ? (
               <><Square className="h-3 w-3 mr-1" /> Stop</>
@@ -414,6 +415,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
                     key={s}
                     onClick={() => send(s)}
                     className="block w-full text-left text-xs px-2.5 py-1.5 rounded border hover:bg-muted transition-colors"
+                    data-pendo-id="suggested-prompt"
                   >
                     {s}
                   </button>
@@ -440,6 +442,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
                             onClick={() => reactToMessage(m.messageId!, "positive")}
                             className={`p-0.5 rounded hover:bg-background/60 transition-colors ${m.reaction === "positive" ? "text-green-600" : "text-muted-foreground/50"}`}
                             aria-label="Thumbs up"
+                            data-pendo-id="thumbs-up"
                           >
                             <ThumbsUp className="h-3 w-3" />
                           </button>
@@ -447,6 +450,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
                             onClick={() => reactToMessage(m.messageId!, "negative")}
                             className={`p-0.5 rounded hover:bg-background/60 transition-colors ${m.reaction === "negative" ? "text-destructive" : "text-muted-foreground/50"}`}
                             aria-label="Thumbs down"
+                            data-pendo-id="thumbs-down"
                           >
                             <ThumbsDown className="h-3 w-3" />
                           </button>
@@ -491,6 +495,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
               disabled={!input.trim() || isLoading}
               size="icon"
               className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-[38px] w-[38px]"
+              data-pendo-id="send-message"
             >
               <Send className="h-3.5 w-3.5" />
             </Button>

@@ -308,10 +308,11 @@ export function AddEmployeeDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              data-pendo-id="cancel-add-employee"
             >
               Cancel
             </Button>
-            <Button type="submit">Create & Start Onboarding</Button>
+            <Button type="submit" data-pendo-id="create-start-onboarding">Create & Start Onboarding</Button>
           </div>
         </form>
       </DialogContent>

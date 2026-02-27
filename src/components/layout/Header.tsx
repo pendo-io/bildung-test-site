@@ -49,12 +49,13 @@ export function Header({ title, subtitle }: HeaderProps) {
           size="icon"
           onClick={refreshUser}
           title="Refresh visitor/account"
+          data-pendo-id="refresh-visitor"
         >
           <RefreshCw className="h-4 w-4 text-muted-foreground" />
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" data-pendo-id="notifications">
           <Bell className="h-5 w-5 text-muted-foreground" />
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent animate-pulse-subtle" />
         </Button>
@@ -62,7 +63,7 @@ export function Header({ title, subtitle }: HeaderProps) {
         {/* User Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-2">
+            <Button variant="ghost" className="flex items-center gap-2 px-2" data-pendo-id="user-menu">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 <User className="h-4 w-4" />
               </div>
@@ -91,7 +92,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               </Badge>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={refreshUser} className="cursor-pointer">
+            <DropdownMenuItem onClick={refreshUser} className="cursor-pointer" data-pendo-id="simulate-new-visitor">
               <RefreshCw className="mr-2 h-4 w-4" />
               Simulate New Visitor
             </DropdownMenuItem>

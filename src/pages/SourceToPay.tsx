@@ -46,7 +46,7 @@ export default function SourceToPay() {
             <h3 className="text-lg font-semibold text-card-foreground">Recent Purchase Orders</h3>
             <p className="text-sm text-muted-foreground">Track and manage your procurement requests</p>
           </div>
-          <Button onClick={() => setShowAddDialog(true)}>Create New PO</Button>
+          <Button onClick={() => setShowAddDialog(true)} data-pendo-id="create-new-po">Create New PO</Button>
         </div>
 
         <Table>
@@ -64,7 +64,7 @@ export default function SourceToPay() {
             {purchaseOrders.map((po) => {
               const StatusIcon = statusStyles[po.status as keyof typeof statusStyles]?.icon || Clock;
               return (
-                <TableRow key={po.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/source-to-pay/purchase-order/${po.id}`)}>
+                <TableRow key={po.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/source-to-pay/purchase-order/${po.id}`)} data-pendo-id="po-row">
                   <TableCell className="font-medium">{po.id}</TableCell>
                   <TableCell>{po.vendor}</TableCell>
                   <TableCell>{po.amount}</TableCell>
@@ -75,7 +75,7 @@ export default function SourceToPay() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{po.date}</TableCell>
-                  <TableCell className="text-right"><Button variant="ghost" size="sm">View</Button></TableCell>
+                  <TableCell className="text-right"><Button variant="ghost" size="sm" data-pendo-id="view-po">View</Button></TableCell>
                 </TableRow>
               );
             })}

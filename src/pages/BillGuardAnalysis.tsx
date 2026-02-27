@@ -392,6 +392,7 @@ export default function BillGuardAnalysis() {
                 className="bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={handleAnalyze}
                 disabled={isAnalyzing}
+                data-pendo-id="analyze"
               >
                 {isAnalyzing ? <><Loader2 className="h-4 w-4 animate-spin mr-1" /> Analyzing...</> : "Analyze"}
               </Button>
@@ -411,6 +412,7 @@ export default function BillGuardAnalysis() {
                       onClick={() => handleCopyId(item.id)}
                       className="font-medium text-sm w-36 shrink-0 text-left hover:underline flex items-center gap-1.5 text-blue-700 cursor-pointer"
                       title={`Click to copy ${item.id}`}
+                      data-pendo-id={`copy-invoice-${item.id}`}
                     >
                       {copiedId === item.id ? (
                         <Check className="h-3.5 w-3.5 text-green-600" />

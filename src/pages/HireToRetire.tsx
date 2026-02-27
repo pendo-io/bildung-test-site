@@ -46,11 +46,11 @@ export default function HireToRetire() {
         <div className="rounded-xl border border-border bg-card p-6 card-elevated">
           <div className="flex items-center justify-between mb-6">
             <div><h3 className="text-lg font-semibold text-card-foreground">Recent Hires</h3><p className="text-sm text-muted-foreground">New team members joining this month</p></div>
-            <Button onClick={() => setShowAddDialog(true)}>Add Employee</Button>
+            <Button onClick={() => setShowAddDialog(true)} data-pendo-id="add-employee">Add Employee</Button>
           </div>
           <div className="space-y-4">
             {recentHires.map((employee) => (
-              <div key={employee.id} onClick={() => navigate(`/hire-to-retire/employee/${employee.id}`)} className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer">
+              <div key={employee.id} onClick={() => navigate(`/hire-to-retire/employee/${employee.id}`)} data-pendo-id="employee-row" className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer">
                 <Avatar className="h-10 w-10"><AvatarFallback className="bg-primary text-primary-foreground text-sm">{employee.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback></Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2"><h4 className="font-medium text-card-foreground truncate">{employee.name}</h4>{employee.status === "onboarding" && <Badge variant="outline" className="bg-info/10 text-info border-info/30">Onboarding</Badge>}</div>
@@ -63,7 +63,7 @@ export default function HireToRetire() {
         </div>
 
         <div className="rounded-xl border border-border bg-card p-6 card-elevated">
-          <div className="flex items-center justify-between mb-6"><div><h3 className="text-lg font-semibold text-card-foreground">Open Positions</h3><p className="text-sm text-muted-foreground">Active job requisitions</p></div><Button>Post New Job</Button></div>
+          <div className="flex items-center justify-between mb-6"><div><h3 className="text-lg font-semibold text-card-foreground">Open Positions</h3><p className="text-sm text-muted-foreground">Active job requisitions</p></div><Button data-pendo-id="post-new-job">Post New Job</Button></div>
           <div className="space-y-4">
             {openPositions.map((position) => (
               <div key={position.title} className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors">
