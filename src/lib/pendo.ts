@@ -15,7 +15,7 @@ export function initializePendo(userInfo: UserInfo) {
       let v: string[], w: number, x: string, y: HTMLScriptElement, z: HTMLScriptElement;
       o = p[d] = p[d] || {};
       o._q = [];
-      v = ['initialize', 'identify', 'updateOptions', 'pageLoad'];
+      v = ['initialize', 'identify', 'updateOptions', 'pageLoad', 'trackAgent'];
       for (w = 0; w < v.length; ++w) {
         (function (m: string) {
           o[m] = o[m] || function () {
