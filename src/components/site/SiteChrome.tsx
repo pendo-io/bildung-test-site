@@ -25,7 +25,7 @@ export function SiteHeader() {
           <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent border-2 border-foreground brutal-shadow">
             <Sparkles className="h-4 w-4" />
           </span>
-          Wanderlux<span className="text-accent">.</span>
+          Bildung Travel<span className="text-accent">.</span>
         </NavLink>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold">
@@ -107,7 +107,7 @@ export function SiteFooter() {
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-foreground border-2 border-background">
               <Sparkles className="h-4 w-4" />
             </span>
-            Wanderlux<span className="text-accent">.</span>
+            Bildung Travel<span className="text-accent">.</span>
           </div>
           <p className="text-sm opacity-75">
             Curated, small-group journeys to the world's most unforgettable places.
@@ -149,7 +149,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-background/20 text-xs opacity-60 text-center py-4">
-        © {new Date().getFullYear()} Wanderlux Travel Co.
+        © {new Date().getFullYear()} Bildung Travel
       </div>
     </footer>
   );
