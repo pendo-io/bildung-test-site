@@ -85,7 +85,7 @@ async function streamChat({
   onDone();
 }
 
-const PENDO_AGENT_ID = "qzI-68_xayWnF-L8NXrPDpU5qoI";
+const PENDO_AGENT_ID = "x-0aLHjcG0PGTk4d50clszz26uo";
 
 function generateId() {
   return crypto.randomUUID();
