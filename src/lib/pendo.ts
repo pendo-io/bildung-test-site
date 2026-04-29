@@ -1,6 +1,6 @@
 import { UserInfo } from './userGenerator';
 
-const PENDO_API_KEY = '63d9a79e-c421-4112-8840-e1d865733925';
+const PENDO_API_KEY = 'ffda48cb-6c2d-458b-b447-01181a9361f4';
 
 declare global {
   interface Window {
