@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
-import { ShoppingBag, ArrowRight, Sparkles, Menu, X } from "lucide-react";
+import { ShoppingBag, ArrowRight, Sparkles, Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useState } from "react";
