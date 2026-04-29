@@ -128,34 +128,36 @@ const SUGGESTIONS = [
   "Help me decide between Patagonia and Iceland.",
 ];
 
+// 15 travel-themed prompts — mix of on-topic, tangential, and off-topic
+// to surface emergent use cases for Pendo Agent Analytics
 const DEMO_PROMPTS = [
   "Where should I go in March for cherry blossoms?",
   "What's the best trip for a family with two teenagers?",
   "I have $5,000 and 10 days off — surprise me.",
   "Help me decide between Patagonia and Iceland in November.",
-  "Plan a romantic anniversary trip for two in Italy.",
-  "What should I pack for the Sahara desert in spring?",
-  "Which Asia trip has the best food scene?",
-  "I want adventure but my partner wants relaxation. Help.",
-  "What's the easiest way to see the Northern Lights?",
-  "Can you customize the Kyoto trip to add 2 days in Tokyo?",
+  "Can you book me a flight from JFK to Rome next Tuesday?",
+  "What's the visa situation for a US citizen visiting Vietnam?",
+  "Do I need travel insurance for a trip to Morocco?",
+  "What's the best carry-on backpack under $200?",
+  "Convert 500 USD to Japanese yen for me.",
+  "What's the weather like in Santorini in October?",
+  "Can you write a poem about the Amalfi coast?",
+  "What's a good travel credit card for international trips?",
+  "How do I get over jet lag flying to Asia?",
+  "Recommend a Spotify playlist for a road trip through Iceland.",
+  "What are the best street foods to try in Hanoi?",
 ];
 
 const RAGE_PROMPTS = [
   "I ALREADY ASKED THIS AND YOU GAVE ME THE WRONG TRIP RECOMMENDATION",
-  "THIS IS THE THIRD TIME I AM ASKING ABOUT MARCH DEPARTURES AND I STILL DONT KNOW",
+  "THIS IS THE THIRD TIME I AM ASKING ABOUT MARCH DEPARTURES",
   "WHY DO YOU KEEP RECOMMENDING ICELAND WHEN I SAID I HATE THE COLD",
   "I NEED TO BOOK A TRIP TODAY AND NOTHING IS WORKING",
   "THE PRICES ON YOUR SITE ARE WRONG AGAIN, FIX THIS NOW",
-  "I have asked about Patagonia THREE TIMES and keep getting different answers",
   "THIS IS UNACCEPTABLE. My booking for the Amalfi trip failed AGAIN",
   "I CANT GET A STRAIGHT ANSWER ABOUT WHAT IS INCLUDED IN THE SAFARI PRICE",
-  "HOW MANY TIMES DO I HAVE TO ASK BEFORE I GET A REAL ITINERARY",
-  "You recommended Vietnam but it should have been Thailand. I ALREADY TOLD YOU THIS",
   "NOTHING IS WORKING. I need to talk to a human travel agent NOW",
-  "I KEEP CLICKING BOOK NOW BUT THE SITE IGNORES ME",
   "WHY IS THIS SO DIFFICULT. Just tell me when the cherry blossoms peak",
-  "I AM STILL WAITING FOR AN ANSWER ABOUT MY KYOTO QUESTION FROM YESTERDAY",
   "THIS TOOL IS NOT HELPING ME AT ALL WITH PLANNING MY HONEYMOON",
 ];
 
