@@ -67,6 +67,16 @@ export function SiteHeader() {
           >
             <ArrowRight className="h-4 w-4" /> Talk to Concierge
           </NavLink>
+          <div
+            data-pendo-id="user-profile"
+            title={`${userInfo.visitor} · ${userInfo.account} · ${userInfo.role}`}
+            className="hidden sm:flex items-center gap-2 border-2 border-foreground rounded-full pl-1 pr-3 py-1 bg-background brutal-shadow"
+          >
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent border-2 border-foreground">
+              <User className="h-3.5 w-3.5" />
+            </span>
+            <span className="text-sm font-semibold max-w-[120px] truncate">{userInfo.visitor}</span>
+          </div>
           <button
             onClick={() => setOpen((v) => !v)}
             className="md:hidden border-2 border-foreground rounded-md p-1.5"
