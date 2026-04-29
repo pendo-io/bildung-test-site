@@ -123,40 +123,40 @@ function trackPendoAgent(eventType: "prompt" | "agent_response" | "user_reaction
 }
 
 const SUGGESTIONS = [
-  "What's the difference between prevent, explain, and intervene?",
-  "When should I dispute a weight variance?",
-  "How does the confidence score work?",
+  "Where should I go in March for cherry blossoms?",
+  "What's a good 10-day trip for a couple under $5k?",
+  "Help me decide between Patagonia and Iceland.",
 ];
 
 const DEMO_PROMPTS = [
-  "What is BillGuard and how does it help with invoice disputes?",
-  "Explain how the confidence score determines the recommended action.",
-  "When should a human intervene vs letting AI auto-correct?",
-  "What are the best practices for reducing freight billing errors?",
-  "How does the weight variance threshold affect dispute decisions?",
-  "What happens when auto-correct is not allowed on an invoice?",
-  "Can you explain the difference between billed weight and rated weight?",
-  "What role does the dispute rate play in the AI recommendation?",
-  "How does BillGuard handle high-risk invoices differently?",
-  "What evidence does the agent log for each decision?",
+  "Where should I go in March for cherry blossoms?",
+  "What's the best trip for a family with two teenagers?",
+  "I have $5,000 and 10 days off — surprise me.",
+  "Help me decide between Patagonia and Iceland in November.",
+  "Plan a romantic anniversary trip for two in Italy.",
+  "What should I pack for the Sahara desert in spring?",
+  "Which Asia trip has the best food scene?",
+  "I want adventure but my partner wants relaxation. Help.",
+  "What's the easiest way to see the Northern Lights?",
+  "Can you customize the Kyoto trip to add 2 days in Tokyo?",
 ];
 
 const RAGE_PROMPTS = [
-  "I ALREADY ASKED THIS AND YOU GAVE ME THE WRONG ANSWER",
-  "THIS IS THE THIRD TIME I AM ASKING ABOUT WEIGHT VARIANCE AND I STILL DONT UNDERSTAND",
-  "WHY DOES THE SYSTEM KEEP RECOMMENDING EXPLAIN WHEN IT SHOULD BE INTERVENE",
-  "I NEED HELP WITH MY INVOICE AND NOTHING IS WORKING",
-  "THE CONFIDENCE SCORE IS WRONG AGAIN, FIX THIS NOW",
-  "I have asked about this dispute THREE TIMES and keep getting different answers",
-  "THIS IS UNACCEPTABLE. The auto-correct failed on invoice 2024-1847 AGAIN",
-  "I CANT GET A STRAIGHT ANSWER ABOUT WHY MY DISPUTE WAS REJECTED",
-  "HOW MANY TIMES DO I HAVE TO ASK BEFORE I GET THE RIGHT INFORMATION",
-  "The system recommended prevent but it should have been intervene. I ALREADY REPORTED THIS",
-  "NOTHING IS WORKING. I need to escalate this dispute immediately",
-  "I KEEP CLICKING INTERVENE BUT THE SYSTEM IGNORES MY INPUT",
-  "WHY IS THIS SO DIFFICULT. Just tell me if the invoice is correct or not",
-  "I AM STILL WAITING FOR AN ANSWER ABOUT THE BILLING ERROR FROM LAST WEEK",
-  "THIS TOOL IS NOT HELPING ME AT ALL WITH MY FREIGHT DISPUTES",
+  "I ALREADY ASKED THIS AND YOU GAVE ME THE WRONG TRIP RECOMMENDATION",
+  "THIS IS THE THIRD TIME I AM ASKING ABOUT MARCH DEPARTURES AND I STILL DONT KNOW",
+  "WHY DO YOU KEEP RECOMMENDING ICELAND WHEN I SAID I HATE THE COLD",
+  "I NEED TO BOOK A TRIP TODAY AND NOTHING IS WORKING",
+  "THE PRICES ON YOUR SITE ARE WRONG AGAIN, FIX THIS NOW",
+  "I have asked about Patagonia THREE TIMES and keep getting different answers",
+  "THIS IS UNACCEPTABLE. My booking for the Amalfi trip failed AGAIN",
+  "I CANT GET A STRAIGHT ANSWER ABOUT WHAT IS INCLUDED IN THE SAFARI PRICE",
+  "HOW MANY TIMES DO I HAVE TO ASK BEFORE I GET A REAL ITINERARY",
+  "You recommended Vietnam but it should have been Thailand. I ALREADY TOLD YOU THIS",
+  "NOTHING IS WORKING. I need to talk to a human travel agent NOW",
+  "I KEEP CLICKING BOOK NOW BUT THE SITE IGNORES ME",
+  "WHY IS THIS SO DIFFICULT. Just tell me when the cherry blossoms peak",
+  "I AM STILL WAITING FOR AN ANSWER ABOUT MY KYOTO QUESTION FROM YESTERDAY",
+  "THIS TOOL IS NOT HELPING ME AT ALL WITH PLANNING MY HONEYMOON",
 ];
 
 // ~20% chance a prompt in a cycle is a rage prompt
@@ -378,19 +378,19 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
   }, [startAutoDemo]);
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="pb-3 bg-primary text-primary-foreground rounded-t-lg">
+    <Card className="h-full flex flex-col border-0 rounded-none shadow-none">
+      <CardHeader className="pb-3 bg-foreground text-background rounded-none border-b-2 border-foreground">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
-            BillGuard AI Assistant
+            Concierge AI
           </CardTitle>
           <Button
             variant="ghost"
             size="sm"
             onClick={isAutoDemo ? stopAutoDemo : startAutoDemo}
             disabled={isLoading && !isAutoDemo}
-            className="h-7 px-2 text-xs text-primary-foreground hover:bg-primary-foreground/20"
+            className="h-7 px-2 text-xs bg-accent text-accent-foreground hover:bg-accent/90 border-2 border-background"
             data-pendo-id={isAutoDemo ? "stop-demo" : "start-demo"}
           >
             {isAutoDemo ? (
@@ -407,7 +407,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
           {messages.length === 0 && (
             <div className="space-y-3">
               <p className="text-xs text-muted-foreground">
-                Ask about invoice disputes, weight variances, or billing analysis.
+                Ask about destinations, itineraries, or get a personalized trip suggestion.
               </p>
               <div className="space-y-1.5">
                 {SUGGESTIONS.map((s) => (
@@ -485,7 +485,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
                   send(input);
                 }
               }}
-              placeholder="Ask about disputes..."
+              placeholder="Ask about destinations, itineraries…"
               className="min-h-[38px] max-h-[80px] resize-none text-xs"
               rows={1}
             />
@@ -494,7 +494,7 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
               onClick={() => send(input)}
               disabled={!input.trim() || isLoading}
               size="icon"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 h-[38px] w-[38px]"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground shrink-0 h-[38px] w-[38px] border-2 border-foreground"
               data-pendo-id="send-message"
             >
               <Send className="h-3.5 w-3.5" />
