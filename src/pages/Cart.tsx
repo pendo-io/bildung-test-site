@@ -51,7 +51,21 @@ export default function Cart() {
                       <p className="text-xs text-muted-foreground">{item.trip.country} · {item.trip.duration} · Departs {item.departure}</p>
                     </div>
                     <button
-                      onClick={() => removeFromCart(item.trip.id)}
+                      onClick={() => {
+                        const cart_size_after = items
+                          .filter((i) => i.trip.id !== item.trip.id)
+                          .reduce((acc, i) => acc + i.travelers, 0);
+                        trackEvent("Trip Removed from Cart", {
+                          trip_id: item.trip.id,
+                          trip_name: item.trip.name,
+                          destination: item.trip.country,
+                          departure: item.departure,
+                          travelers: item.travelers,
+                          line_value: item.trip.priceUSD * item.travelers,
+                          cart_size_after,
+                        });
+                        removeFromCart(item.trip.id);
+                      }}
                       data-pendo-id={`remove-${item.trip.slug}`}
                       className="text-muted-foreground hover:text-destructive p-1"
                       aria-label="Remove"
