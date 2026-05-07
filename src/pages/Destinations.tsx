@@ -2,6 +2,8 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { TripCard } from "@/components/site/TripCard";
 import { trips } from "@/lib/trips";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { trackEvent } from "@/lib/pendoTrack";
 
 const regions = ["All", "Asia", "Europe", "Africa", "South America"];
