@@ -116,9 +116,9 @@ function getDateBasedVisitorId(): UserInfo {
       break;
   }
 
-  const visitorIndex = visitors.indexOf(visitorName);
+  const visitorIndex = Math.max(0, visitors.indexOf(visitorName));
   role = roles[visitorIndex % roles.length];
-  account_id = accounts[visitorIndex % accounts.length];
+  account_id = accounts[visitorIndex % accounts.length] ?? accounts[0];
   const accString = account_id.replace(/\s/g, "");
   visitor = `${visitor}${accString}.com`;
 
