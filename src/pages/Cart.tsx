@@ -2,6 +2,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useCart } from "@/contexts/CartContext";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Trash2, ArrowRight, ShoppingBag } from "lucide-react";
+import { trackEvent } from "@/lib/pendoTrack";
 
 export default function Cart() {
   const { items, removeFromCart, updateTravelers, subtotal } = useCart();
