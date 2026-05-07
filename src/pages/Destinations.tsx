@@ -1,7 +1,8 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { TripCard } from "@/components/site/TripCard";
 import { trips } from "@/lib/trips";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { trackEvent } from "@/lib/pendoTrack";
 
 const regions = ["All", "Asia", "Europe", "Africa", "South America"];
 
@@ -16,6 +17,20 @@ export default function Destinations() {
     if (sort === "popular") list = [...list].sort((a, b) => b.reviews - a.reviews);
     return list;
   }, [region, sort]);
+
+  // Skip the very first render so we only fire on actual user changes
+  const isFirst = useRef(true);
+  useEffect(() => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      return;
+    }
+    trackEvent("Destination Filter Applied", {
+      filter: region,
+      sort,
+      results_count: filtered.length,
+    });
+  }, [region, sort, filtered.length]);
 
   return (
     <SiteLayout>
@@ -53,8 +68,8 @@ export default function Destinations() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((t) => (
-            <TripCard key={t.id} trip={t} />
+          {filtered.map((t, i) => (
+            <TripCard key={t.id} trip={t} position={i + 1} source="destinations_listing" />
           ))}
         </div>
       </section>

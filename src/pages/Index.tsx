@@ -70,8 +70,8 @@ const Index = () => {
           </NavLink>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featured.map((t) => (
-            <TripCard key={t.id} trip={t} />
+          {featured.map((t, i) => (
+            <TripCard key={t.id} trip={t} position={i + 1} source="home_featured" />
           ))}
         </div>
       </section>
