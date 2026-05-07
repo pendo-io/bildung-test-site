@@ -11,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReactMarkdown from "react-markdown";
 import { toast } from "sonner";
+import { runSyntheticFunnel } from "@/lib/syntheticFunnel";
 
 type Msg = { role: "user" | "assistant"; content: string; messageId?: string; reaction?: "positive" | "negative" };
 
