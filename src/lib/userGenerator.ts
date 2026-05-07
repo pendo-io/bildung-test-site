@@ -181,7 +181,10 @@ export function generateUserInfo(): UserInfo {
   const urlParams = new URLSearchParams(window.location.search);
   const urlVisitor = urlParams.get("visitor");
   const urlAccount = urlParams.get("account");
-  const urlRole = urlParams.get("role") as UserRole | null;
+  // NOTE: role is intentionally NOT overridable via URL params.
+  // Allowing ?role=admin would let any visitor spoof analytics segments
+  // and could become a privilege escalation vector if role is ever used
+  // for access control. Role is always derived server/data-side.
 
   const randomRoll = getRandomArbitrary(0, 3);
   let userInfo: UserInfo;
