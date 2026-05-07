@@ -13,14 +13,15 @@ import { trackEvent } from "@/lib/pendoTrack";
 export type ExperienceTier = "good" | "normal" | "bad";
 
 // Per-stage continue probability. Multiply across stages to get effective CVR.
-// good   ≈ 1 * .95 * .9 * .85 * .8 * .75 * .65 * .5  ≈ 14% booking
-// normal ≈ 1 * .8  * .65* .5  * .4 * .3  * .22* .15  ≈  0.7% booking (lots of cart abandon)
-// bad    ≈ 1 * .55 * .3 * .15 * .08* .04 * .02* .01  ≈ ~0% booking
+// Targets (filter → booking):
+//   good   ≈ 20%   (0.97 * 0.92 * 0.93 * 0.88 * 0.82 * 0.75 * 0.45 ≈ 0.202)
+//   normal ≈ 3%    (0.85 * 0.75 * 0.78 * 0.65 * 0.55 * 0.45 * 0.38 ≈ 0.030)
+//   bad    ≈ 0.01% (0.60 * 0.45 * 0.50 * 0.35 * 0.25 * 0.15 * 0.06 ≈ 0.0001)
 const STAGE_PROBABILITIES: Record<ExperienceTier, number[]> = {
   // [filter, card, view, configure, addToCart, checkoutStart, bookingComplete]
-  good:   [0.95, 0.90, 0.92, 0.85, 0.78, 0.70, 0.55],
-  normal: [0.80, 0.65, 0.70, 0.50, 0.35, 0.28, 0.18],
-  bad:    [0.55, 0.30, 0.40, 0.18, 0.10, 0.06, 0.03],
+  good:   [0.97, 0.92, 0.93, 0.88, 0.82, 0.75, 0.45],
+  normal: [0.85, 0.75, 0.78, 0.65, 0.55, 0.45, 0.38],
+  bad:    [0.60, 0.45, 0.50, 0.35, 0.25, 0.15, 0.06],
 };
 
 const REGIONS = ["All", "Asia", "Europe", "Africa", "South America"];
