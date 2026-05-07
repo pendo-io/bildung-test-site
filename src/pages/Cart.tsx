@@ -116,7 +116,19 @@ export default function Cart() {
                 <span>${total.toLocaleString()}</span>
               </div>
               <button
-                onClick={() => navigate("/checkout")}
+                onClick={() => {
+                  trackEvent("Checkout Started", {
+                    cart_item_count: items.length,
+                    total_travelers: items.reduce((acc, i) => acc + i.travelers, 0),
+                    subtotal,
+                    taxes_fees: taxes,
+                    cart_total: total,
+                    currency: "USD",
+                    trip_ids: items.map((i) => i.trip.id),
+                    destinations: items.map((i) => i.trip.country),
+                  });
+                  navigate("/checkout");
+                }}
                 data-pendo-id="proceed-to-checkout"
                 className="w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-6 py-3 font-bold brutal-shadow"
               >
