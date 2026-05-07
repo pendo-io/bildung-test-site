@@ -211,9 +211,6 @@ export function generateUserInfo(): UserInfo {
     userInfo.visitor = urlVisitor;
     userInfo.visitorId = `${urlVisitor}@${userInfo.account.replace(/\s/g, "")}.com`;
   }
-  if (urlRole && roles.includes(urlRole)) {
-    userInfo.role = urlRole;
-  }
 
   return userInfo;
 }
