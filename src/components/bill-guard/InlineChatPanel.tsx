@@ -301,6 +301,9 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     setUserByIndex(visitorIndex);
 
     let currentMessages: Msg[] = [];
+    let cycleRageCount = 0;
+    let cycleNegativeReactions = 0;
+    let cyclePromptCount = 0;
     while (autoDemoRef.current) {
       // Pick 2-4 random prompts each cycle
       const cyclePrompts = pickDemoPrompts(2 + Math.floor(Math.random() * 3));
@@ -310,7 +313,10 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
         // Set input text, then click the Send button
-        setInput(cyclePrompts[i]);
+        const promptText = cyclePrompts[i];
+        if (RAGE_PROMPTS.includes(promptText)) cycleRageCount++;
+        cyclePromptCount++;
+        setInput(promptText);
         await new Promise((r) => setTimeout(r, 300));
         if (!autoDemoRef.current) break;
         // Create a promise that send() will resolve when done
@@ -329,7 +335,10 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
             await new Promise((r) => setTimeout(r, 600 + Math.random() * 800));
             const lastAssistant = [...result].reverse().find((m) => m.role === "assistant" && m.messageId);
             if (lastAssistant?.messageId) {
-              const reaction = Math.random() < 0.8 ? "positive" : "negative";
+              // Bias reactions: rage prompts → mostly negative
+              const negativeBias = RAGE_PROMPTS.includes(promptText) ? 0.75 : 0.2;
+              const reaction = Math.random() < negativeBias ? "negative" : "positive";
+              if (reaction === "negative") cycleNegativeReactions++;
               reactToMessage(lastAssistant.messageId, reaction as "positive" | "negative");
             }
           }
@@ -338,13 +347,23 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
           break;
         }
       }
-      // Pause, refresh visitor identity, run bot in other areas, clear chat for next cycle
+      // Pause, fire synthetic purchase funnel, refresh visitor identity, run bot in other areas, clear chat for next cycle
       if (autoDemoRef.current) {
         await new Promise((r) => setTimeout(r, 2500));
         if (!autoDemoRef.current) break;
+
+        // Synthetic purchase funnel — CVR scales with chat experience quality
+        await runSyntheticFunnel({
+          rageCount: cycleRageCount,
+          negativeReactions: cycleNegativeReactions,
+          totalPrompts: cyclePromptCount,
+          shouldStop: () => !autoDemoRef.current,
+        });
+        if (!autoDemoRef.current) break;
+
         visitorIndex = (visitorIndex + 1) % 50; // Cycle through all 50 visitors sequentially
         setUserByIndex(visitorIndex);
-        
+
         // Run bot sequence in other areas of the app
         if (onRunBotSequence) {
           console.log("[AppBot] Starting bot sequence in other app areas...");
@@ -353,9 +372,12 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
           if (!autoDemoRef.current) break;
           await new Promise((r) => setTimeout(r, 1000));
         }
-        
+
         setMessages([]);
         currentMessages = [];
+        cycleRageCount = 0;
+        cycleNegativeReactions = 0;
+        cyclePromptCount = 0;
         conversationIdRef.current = generateId();
       }
     }
