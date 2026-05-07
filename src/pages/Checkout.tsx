@@ -1,15 +1,29 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useCart } from "@/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/pendoTrack";
+
+type CompletedOrder = {
+  order_id: string;
+  item_count: number;
+  total_travelers: number;
+  total_value: number;
+  currency: string;
+  trip_ids: string[];
+  destinations: string[];
+  departures: string[];
+};
 
 export default function Checkout() {
   const { items, subtotal, clear } = useCart();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<CompletedOrder | null>(null);
+  const trackedRef = useRef(false);
 
   const taxes = Math.round(subtotal * 0.08);
   const total = subtotal + taxes;
@@ -18,12 +32,31 @@ export default function Checkout() {
     e.preventDefault();
     setSubmitting(true);
     setTimeout(() => {
+      const order: CompletedOrder = {
+        order_id: `BT-${Date.now().toString(36).toUpperCase()}`,
+        item_count: items.length,
+        total_travelers: items.reduce((acc, i) => acc + i.travelers, 0),
+        total_value: total,
+        currency: "USD",
+        trip_ids: items.map((i) => i.trip.id),
+        destinations: items.map((i) => i.trip.country),
+        departures: items.map((i) => i.departure),
+      };
+      setCompletedOrder(order);
       setSubmitting(false);
       setDone(true);
       clear();
       toast.success("Booking confirmed! Check your inbox.");
     }, 1200);
   };
+
+  useEffect(() => {
+    if (done && completedOrder && !trackedRef.current) {
+      trackedRef.current = true;
+      trackEvent("Booking Completed", completedOrder);
+    }
+  }, [done, completedOrder]);
+
 
   if (done) {
     return (

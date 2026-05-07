@@ -1,11 +1,32 @@
 import { Trip } from "@/lib/trips";
 import { Star, Clock, MapPin } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { trackEvent } from "@/lib/pendoTrack";
 
-export function TripCard({ trip }: { trip: Trip }) {
+type Props = {
+  trip: Trip;
+  position?: number;
+  source?: string;
+};
+
+export function TripCard({ trip, position, source = "destinations_listing" }: Props) {
+  const handleClick = () => {
+    trackEvent("Trip Card Clicked", {
+      trip_id: trip.id,
+      trip_name: trip.name,
+      destination: trip.country,
+      nights: trip.nights,
+      price_per_person: trip.priceUSD,
+      rating: trip.rating,
+      position,
+      source,
+    });
+  };
+
   return (
     <NavLink
       to={`/destinations/${trip.slug}`}
+      onClick={handleClick}
       data-pendo-id={`trip-card-${trip.slug}`}
       className="group block rounded-2xl border-2 border-foreground bg-card brutal-shadow card-hover overflow-hidden"
     >

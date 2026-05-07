@@ -2,6 +2,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useCart } from "@/contexts/CartContext";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Trash2, ArrowRight, ShoppingBag } from "lucide-react";
+import { trackEvent } from "@/lib/pendoTrack";
 
 export default function Cart() {
   const { items, removeFromCart, updateTravelers, subtotal } = useCart();
@@ -50,7 +51,21 @@ export default function Cart() {
                       <p className="text-xs text-muted-foreground">{item.trip.country} · {item.trip.duration} · Departs {item.departure}</p>
                     </div>
                     <button
-                      onClick={() => removeFromCart(item.trip.id)}
+                      onClick={() => {
+                        const cart_size_after = items
+                          .filter((i) => i.trip.id !== item.trip.id)
+                          .reduce((acc, i) => acc + i.travelers, 0);
+                        trackEvent("Trip Removed from Cart", {
+                          trip_id: item.trip.id,
+                          trip_name: item.trip.name,
+                          destination: item.trip.country,
+                          departure: item.departure,
+                          travelers: item.travelers,
+                          line_value: item.trip.priceUSD * item.travelers,
+                          cart_size_after,
+                        });
+                        removeFromCart(item.trip.id);
+                      }}
                       data-pendo-id={`remove-${item.trip.slug}`}
                       className="text-muted-foreground hover:text-destructive p-1"
                       aria-label="Remove"
@@ -101,7 +116,19 @@ export default function Cart() {
                 <span>${total.toLocaleString()}</span>
               </div>
               <button
-                onClick={() => navigate("/checkout")}
+                onClick={() => {
+                  trackEvent("Checkout Started", {
+                    cart_item_count: items.length,
+                    total_travelers: items.reduce((acc, i) => acc + i.travelers, 0),
+                    subtotal,
+                    taxes_fees: taxes,
+                    cart_total: total,
+                    currency: "USD",
+                    trip_ids: items.map((i) => i.trip.id),
+                    destinations: items.map((i) => i.trip.country),
+                  });
+                  navigate("/checkout");
+                }}
                 data-pendo-id="proceed-to-checkout"
                 className="w-full inline-flex items-center justify-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-6 py-3 font-bold brutal-shadow"
               >

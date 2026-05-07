@@ -1,7 +1,10 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { TripCard } from "@/components/site/TripCard";
 import { trips } from "@/lib/trips";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
+import { trackEvent } from "@/lib/pendoTrack";
 
 const regions = ["All", "Asia", "Europe", "Africa", "South America"];
 
@@ -17,11 +20,42 @@ export default function Destinations() {
     return list;
   }, [region, sort]);
 
+  // Skip the very first render so we only fire on actual user changes
+  const isFirst = useRef(true);
+  useEffect(() => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      return;
+    }
+    trackEvent("Destination Filter Applied", {
+      filter: region,
+      sort,
+      results_count: filtered.length,
+    });
+  }, [region, sort, filtered.length]);
+
   return (
     <SiteLayout>
       <section className="mx-auto max-w-7xl px-4 md:px-8 py-12">
-        <h1 className="text-4xl md:text-5xl font-black mb-3">All destinations</h1>
-        <p className="text-muted-foreground mb-8">Pick a journey. Or talk to Concierge AI to build one.</p>
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black mb-3">All destinations</h1>
+            <p className="text-muted-foreground">Pick a journey. Or talk to Concierge AI to build one.</p>
+          </div>
+          <NavLink
+            to="/concierge"
+            data-pendo-id="destinations-talk-to-concierge"
+            onClick={() =>
+              trackEvent("Concierge Opened", {
+                source: "destinations_listing",
+                page: "/destinations",
+              })
+            }
+            className="inline-flex items-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-5 py-2 font-bold text-sm brutal-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
+          >
+            <MessageCircle className="h-4 w-4" /> Plan with Concierge AI
+          </NavLink>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8 border-y-2 border-foreground py-4">
           <div className="flex flex-wrap gap-2">
@@ -53,8 +87,8 @@ export default function Destinations() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((t) => (
-            <TripCard key={t.id} trip={t} />
+          {filtered.map((t, i) => (
+            <TripCard key={t.id} trip={t} position={i + 1} source="destinations_listing" />
           ))}
         </div>
       </section>

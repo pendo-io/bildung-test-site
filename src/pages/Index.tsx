@@ -4,6 +4,7 @@ import { trips } from "@/lib/trips";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles, MapPin, ShieldCheck, MessageCircle } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { trackEvent } from "@/lib/pendoTrack";
 
 const Index = () => {
   const featured = trips.slice(0, 6);
@@ -35,6 +36,7 @@ const Index = () => {
             <NavLink
               to="/concierge"
               data-pendo-id="hero-talk-to-concierge"
+              onClick={() => trackEvent("Concierge Opened", { source: "hero", page: "/" })}
               className="inline-flex items-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-6 py-3 font-bold brutal-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_hsl(var(--foreground))] transition-all"
             >
               <MessageCircle className="h-4 w-4" /> Plan with Concierge AI
@@ -70,8 +72,8 @@ const Index = () => {
           </NavLink>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featured.map((t) => (
-            <TripCard key={t.id} trip={t} />
+          {featured.map((t, i) => (
+            <TripCard key={t.id} trip={t} position={i + 1} source="home_featured" />
           ))}
         </div>
       </section>
@@ -112,6 +114,7 @@ const Index = () => {
         <NavLink
           to="/concierge"
           data-pendo-id="cta-bottom-concierge"
+          onClick={() => trackEvent("Concierge Opened", { source: "cta_bottom", page: "/" })}
           className="inline-flex items-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-8 py-4 font-bold text-lg brutal-shadow-lg hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all"
         >
           Start planning <ArrowRight className="h-5 w-5" />

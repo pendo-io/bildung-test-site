@@ -2,19 +2,62 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { getTripBySlug } from "@/lib/trips";
 import { useNavigate, useParams, NavLink } from "react-router-dom";
 import { Star, Clock, MapPin, Check, ArrowRight, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
+import { trackEvent } from "@/lib/pendoTrack";
 
 const departureMonths = ["Mar 2026", "Apr 2026", "May 2026", "Jun 2026", "Sep 2026", "Oct 2026"];
 
 export default function TripDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
   const trip = slug ? getTripBySlug(slug) : undefined;
   const [travelers, setTravelers] = useState(2);
   const [departure, setDeparture] = useState(departureMonths[1]);
+
+  // Trip Viewed — fires once per trip
+  useEffect(() => {
+    if (!trip) return;
+    trackEvent("Trip Viewed", {
+      trip_id: trip.id,
+      trip_name: trip.name,
+      destination: trip.country,
+      price_per_person: trip.priceUSD,
+      nights: trip.nights,
+      rating: trip.rating,
+      review_count: trip.reviews,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trip?.id]);
+
+  // Debounced Trip Configuration Changed (departure / travelers)
+  const isFirstConfig = useRef(true);
+  const lastFieldChangedRef = useRef<"departure" | "travelers" | null>(null);
+  useEffect(() => {
+    if (!trip) return;
+    if (isFirstConfig.current) {
+      isFirstConfig.current = false;
+      return;
+    }
+    const field = lastFieldChangedRef.current;
+    if (!field) return;
+    const t = setTimeout(() => {
+      trackEvent("Trip Configuration Changed", {
+        trip_id: trip.id,
+        trip_name: trip.name,
+        destination: trip.country,
+        nights: trip.nights,
+        price_per_person: trip.priceUSD,
+        departure,
+        travelers,
+        field_changed: field,
+      });
+    }, 500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [departure, travelers]);
 
   if (!trip) {
     return (
@@ -29,12 +72,33 @@ export default function TripDetail() {
 
   const total = trip.priceUSD * travelers;
 
+  const coreTripPayload = () => ({
+    trip_id: trip.id,
+    trip_name: trip.name,
+    destination: trip.country,
+    nights: trip.nights,
+    price_per_person: trip.priceUSD,
+    rating: trip.rating,
+    review_count: trip.reviews,
+    departure,
+    travelers,
+    total_value: total,
+    currency: "USD",
+  });
+
   const handleAdd = () => {
     addToCart(trip, travelers, departure);
+    const alreadyIn = items.some((i) => i.trip.id === trip.id);
+    const cart_size_after = items.reduce((acc, i) => acc + i.travelers, 0) + (alreadyIn ? 0 : travelers);
+    trackEvent("Trip Added to Cart", {
+      ...coreTripPayload(),
+      cart_size_after,
+    });
     toast.success(`${trip.name} added to your trip basket`);
   };
 
   const handleBookNow = () => {
+    trackEvent("Book Now Clicked", coreTripPayload());
     addToCart(trip, travelers, departure);
     navigate("/cart");
   };
@@ -94,7 +158,10 @@ export default function TripDetail() {
               <label className="block text-sm font-semibold mb-1">Departure</label>
               <select
                 value={departure}
-                onChange={(e) => setDeparture(e.target.value)}
+                onChange={(e) => {
+                  lastFieldChangedRef.current = "departure";
+                  setDeparture(e.target.value);
+                }}
                 className="w-full border-2 border-foreground rounded-xl px-3 py-2 mb-4 bg-background"
                 data-pendo-id="select-departure"
               >
@@ -106,13 +173,19 @@ export default function TripDetail() {
               <label className="block text-sm font-semibold mb-1">Travelers</label>
               <div className="flex items-center gap-3 mb-5">
                 <button
-                  onClick={() => setTravelers((n) => Math.max(1, n - 1))}
+                  onClick={() => {
+                    lastFieldChangedRef.current = "travelers";
+                    setTravelers((n) => Math.max(1, n - 1));
+                  }}
                   className="h-10 w-10 rounded-full border-2 border-foreground font-bold"
                   data-pendo-id="travelers-decrement"
                 >−</button>
                 <span className="text-xl font-extrabold w-8 text-center">{travelers}</span>
                 <button
-                  onClick={() => setTravelers((n) => n + 1)}
+                  onClick={() => {
+                    lastFieldChangedRef.current = "travelers";
+                    setTravelers((n) => n + 1);
+                  }}
                   className="h-10 w-10 rounded-full border-2 border-foreground font-bold"
                   data-pendo-id="travelers-increment"
                 >+</button>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/pendoTrack";
 
 const navLinks = [
   { name: "Destinations", href: "/destinations" },
@@ -63,6 +64,9 @@ export function SiteHeader() {
           <NavLink
             to="/concierge"
             data-pendo-id="cta-talk-to-concierge"
+            onClick={() =>
+              trackEvent("Concierge Opened", { source: "header", page: location.pathname })
+            }
             className="hidden md:inline-flex items-center gap-2 bg-accent text-accent-foreground border-2 border-foreground rounded-full px-4 py-1.5 font-bold text-sm brutal-shadow hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_0_hsl(var(--foreground))] transition-all"
           >
             <ArrowRight className="h-4 w-4" /> Talk to Concierge
