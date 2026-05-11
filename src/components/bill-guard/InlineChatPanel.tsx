@@ -249,6 +249,14 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
       content: trimmed,
       suggestedPrompt: isSuggested,
     });
+    trackEvent("Interacted with Concierge", {
+      conversationId: conversationIdRef.current,
+      messageId: promptMessageId,
+      promptLength: trimmed.length,
+      suggestedPrompt: isSuggested,
+      isRagePrompt: RAGE_PROMPTS.includes(trimmed),
+      promptIndexInConversation: currentMessages.filter(m => m.role === "user").length + 1,
+    });
 
     let assistantSoFar = "";
     const responseMessageId = generateId();
