@@ -310,25 +310,26 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
     setUserByIndex(visitorIndex);
 
     let currentMessages: Msg[] = [];
-    let cycleRageCount = 0;
-    let cycleNegativeReactions = 0;
-    let cyclePromptCount = 0;
-    while (autoDemoRef.current) {
-      // Pick 2-4 random prompts each cycle
+
+    // Runs one block of Concierge prompts (2-4 random prompts + reactions).
+    // Returns experience stats for use by the funnel CVR classifier.
+    const runConciergeBlock = async (): Promise<{ rageCount: number; negativeReactions: number; promptCount: number }> => {
+      let rageCount = 0;
+      let negativeReactions = 0;
+      let promptCount = 0;
+
       const cyclePrompts = pickDemoPrompts(2 + Math.floor(Math.random() * 3));
       for (let i = 0; i < cyclePrompts.length; i++) {
         if (!autoDemoRef.current) break;
         demoIndexRef.current = i;
         if (currentMessages.length > 0) await new Promise((r) => setTimeout(r, 1500));
         if (!autoDemoRef.current) break;
-        // Set input text, then click the Send button
         const promptText = cyclePrompts[i];
-        if (RAGE_PROMPTS.includes(promptText)) cycleRageCount++;
-        cyclePromptCount++;
+        if (RAGE_PROMPTS.includes(promptText)) rageCount++;
+        promptCount++;
         setInput(promptText);
         await new Promise((r) => setTimeout(r, 300));
         if (!autoDemoRef.current) break;
-        // Create a promise that send() will resolve when done
         const resultPromise = new Promise<Msg[] | null>((resolve) => {
           sendResolveRef.current = resolve;
         });
@@ -339,15 +340,13 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
         const result = await resultPromise;
         if (result) {
           currentMessages = result;
-          // Auto-react to the last assistant message (~70% chance)
           if (autoDemoRef.current && Math.random() < 0.7) {
             await new Promise((r) => setTimeout(r, 600 + Math.random() * 800));
             const lastAssistant = [...result].reverse().find((m) => m.role === "assistant" && m.messageId);
             if (lastAssistant?.messageId) {
-              // Bias reactions: rage prompts → mostly negative
               const negativeBias = RAGE_PROMPTS.includes(promptText) ? 0.75 : 0.2;
               const reaction = Math.random() < negativeBias ? "negative" : "positive";
-              if (reaction === "negative") cycleNegativeReactions++;
+              if (reaction === "negative") negativeReactions++;
               reactToMessage(lastAssistant.messageId, reaction as "positive" | "negative");
             }
           }
@@ -356,43 +355,67 @@ export function InlineChatPanel({ onAnalyze, onRunBotSequence }: InlineChatPanel
           break;
         }
       }
-      // Pause, fire synthetic purchase funnel, refresh visitor identity, run bot in other areas, clear chat for next cycle
-      if (autoDemoRef.current) {
-        await new Promise((r) => setTimeout(r, 2500));
+      return { rageCount, negativeReactions, promptCount };
+    };
+
+    while (autoDemoRef.current) {
+      // 60% of cycles include the Concierge interleaved at a random funnel position.
+      // 40% skip the Concierge entirely (visitor only browses/buys).
+      const useConcierge = Math.random() < 0.6;
+      const interleaveAt = useConcierge ? Math.floor(Math.random() * 8) : -1; // 0..7
+
+      let conciergeStats = { rageCount: 0, negativeReactions: 0, promptCount: 0 };
+
+      // If Concierge runs first (interleaveAt === 0), do it BEFORE the funnel so
+      // its rage/negative counts feed into the funnel's experience tier.
+      if (useConcierge && interleaveAt === 0) {
+        conciergeStats = await runConciergeBlock();
         if (!autoDemoRef.current) break;
-
-        // Synthetic purchase funnel — CVR scales with chat experience quality
-        await runSyntheticFunnel({
-          rageCount: cycleRageCount,
-          negativeReactions: cycleNegativeReactions,
-          totalPrompts: cyclePromptCount,
-          shouldStop: () => !autoDemoRef.current,
-        });
-        if (!autoDemoRef.current) break;
-
-        visitorIndex = (visitorIndex + 1) % 50; // Cycle through all 50 visitors sequentially
-        setUserByIndex(visitorIndex);
-
-        // Run bot sequence in other areas of the app
-        if (onRunBotSequence) {
-          console.log("[AppBot] Starting bot sequence in other app areas...");
-          await onRunBotSequence(() => !autoDemoRef.current);
-          // Navigate back to Bill Guard after bot sequence
-          if (!autoDemoRef.current) break;
-          await new Promise((r) => setTimeout(r, 1000));
-        }
-
-        setMessages([]);
-        currentMessages = [];
-        cycleRageCount = 0;
-        cycleNegativeReactions = 0;
-        cyclePromptCount = 0;
-        conversationIdRef.current = generateId();
+        await new Promise((r) => setTimeout(r, 1500));
       }
+
+      // Synthetic purchase funnel — optionally interleaved with Concierge.
+      const conciergeHook = async () => {
+        conciergeStats = await runConciergeBlock();
+      };
+      await runSyntheticFunnel({
+        rageCount: conciergeStats.rageCount,
+        negativeReactions: conciergeStats.negativeReactions,
+        totalPrompts: conciergeStats.promptCount,
+        shouldStop: () => !autoDemoRef.current,
+        interleaveAt: useConcierge && interleaveAt > 0 && interleaveAt < 7 ? interleaveAt : undefined,
+        interleaveFn: useConcierge && interleaveAt > 0 && interleaveAt < 7 ? conciergeHook : undefined,
+      });
+      if (!autoDemoRef.current) break;
+
+      // Concierge after the funnel (post-purchase chat).
+      if (useConcierge && interleaveAt === 7) {
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!autoDemoRef.current) break;
+        conciergeStats = await runConciergeBlock();
+      }
+
+      if (!autoDemoRef.current) break;
+      await new Promise((r) => setTimeout(r, 2000));
+
+      visitorIndex = (visitorIndex + 1) % 50; // Cycle through all 50 visitors sequentially
+      setUserByIndex(visitorIndex);
+
+      // Run bot sequence in other areas of the app
+      if (onRunBotSequence) {
+        console.log("[AppBot] Starting bot sequence in other app areas...");
+        await onRunBotSequence(() => !autoDemoRef.current);
+        if (!autoDemoRef.current) break;
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+
+      setMessages([]);
+      currentMessages = [];
+      conversationIdRef.current = generateId();
     }
     setIsAutoDemo(false);
     autoDemoRef.current = false;
-  }, [send, setUserByIndex]);
+  }, [send, setUserByIndex, reactToMessage, onRunBotSequence]);
 
   const stopAutoDemo = useCallback(() => {
     autoDemoRef.current = false;
