@@ -65,7 +65,26 @@ export async function runSyntheticFunnel(opts: {
   const probs = STAGE_PROBABILITIES[tier];
   const stop = opts.shouldStop ?? (() => false);
 
-  console.debug("[syntheticFunnel] starting", { tier, ...opts });
+  let hookFired = false;
+  const maybeRunHook = async (currentStage: number) => {
+    if (hookFired) return;
+    if (opts.interleaveFn == null || opts.interleaveAt == null) return;
+    if (currentStage >= opts.interleaveAt) {
+      hookFired = true;
+      try { await opts.interleaveFn(); } catch (e) { console.warn("[syntheticFunnel] interleaveFn failed", e); }
+    }
+  };
+  const ensureHookFiresOnEarlyExit = async () => {
+    if (!hookFired && opts.interleaveFn && opts.interleaveAt != null) {
+      hookFired = true;
+      try { await opts.interleaveFn(); } catch (e) { console.warn("[syntheticFunnel] interleaveFn failed", e); }
+    }
+  };
+
+  console.debug("[syntheticFunnel] starting", { tier, interleaveAt: opts.interleaveAt, rageCount: opts.rageCount, negativeReactions: opts.negativeReactions, totalPrompts: opts.totalPrompts });
+
+  await maybeRunHook(0);
+
 
   // Stage 0: Destination Filter Applied
   if (stop() || Math.random() > probs[0]) return;
