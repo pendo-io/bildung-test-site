@@ -87,7 +87,7 @@ export async function runSyntheticFunnel(opts: {
 
 
   // Stage 0: Destination Filter Applied
-  if (stop() || Math.random() > probs[0]) return;
+  if (stop() || Math.random() > probs[0]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(200, 600));
   const region = pick(REGIONS);
   const sort = pick(SORTS) as "popular" | "price-low" | "price-high";
@@ -99,9 +99,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(1);
 
   // Stage 1: Trip Card Clicked
-  if (stop() || filtered.length === 0 || Math.random() > probs[1]) return;
+  if (stop() || filtered.length === 0 || Math.random() > probs[1]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(400, 1200));
   const trip: Trip = pick(filtered);
   const position = randInt(1, Math.min(filtered.length, 9));
@@ -118,9 +119,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(2);
 
   // Stage 2: Trip Viewed
-  if (stop() || Math.random() > probs[2]) return;
+  if (stop() || Math.random() > probs[2]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(300, 800));
   trackEvent("Trip Viewed", {
     trip_id: trip.id,
@@ -132,9 +134,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(3);
 
   // Stage 3: Trip Configuration Changed
-  if (stop() || Math.random() > probs[3]) return;
+  if (stop() || Math.random() > probs[3]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(800, 2000));
   const travelers = randInt(1, 4);
   const departure = pick(DEPARTURES);
@@ -145,9 +148,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(4);
 
   // Stage 4: Trip Added to Cart
-  if (stop() || Math.random() > probs[4]) return;
+  if (stop() || Math.random() > probs[4]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(400, 1000));
   const lineValue = trip.priceUSD * travelers;
   trackEvent("Trip Added to Cart", {
@@ -161,9 +165,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(5);
 
   // Stage 5: Checkout Started
-  if (stop() || Math.random() > probs[5]) return;
+  if (stop() || Math.random() > probs[5]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(1000, 3000));
   const taxes = Math.round(lineValue * 0.08);
   const total = lineValue + taxes;
@@ -179,9 +184,10 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(6);
 
   // Stage 6: Booking Completed
-  if (stop() || Math.random() > probs[6]) return;
+  if (stop() || Math.random() > probs[6]) { await ensureHookFiresOnEarlyExit(); return; }
   await sleep(randInt(1500, 4000));
   trackEvent("Booking Completed", {
     order_id: `ORD-${Date.now()}-${randInt(1000, 9999)}`,
@@ -195,6 +201,9 @@ export async function runSyntheticFunnel(opts: {
     synthetic: true,
     experience_tier: tier,
   });
+  await maybeRunHook(7);
+  await ensureHookFiresOnEarlyExit();
 
   console.debug("[syntheticFunnel] completed booking", { tier });
 }
+
