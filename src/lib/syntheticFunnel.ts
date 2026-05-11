@@ -47,13 +47,19 @@ function classifyExperience(rageCount: number, negativeReactions: number, totalP
 
 /**
  * Fire a realistic, sequential purchase-funnel for one bot session.
- * The chat itself already counts as "Concierge Opened", so we start at filter.
+ *
+ * Optional `interleaveAt` (0..7) runs `interleaveFn` BEFORE that stage index
+ * (0 = before filter, 7 = after Booking Completed). If the funnel drops off
+ * before reaching the interleave position, the hook still runs once at the
+ * drop-off point so the Concierge interaction is not lost.
  */
 export async function runSyntheticFunnel(opts: {
   rageCount: number;
   negativeReactions: number;
   totalPrompts: number;
   shouldStop?: () => boolean;
+  interleaveAt?: number;
+  interleaveFn?: () => Promise<void>;
 }): Promise<void> {
   const tier = classifyExperience(opts.rageCount, opts.negativeReactions, opts.totalPrompts);
   const probs = STAGE_PROBABILITIES[tier];
